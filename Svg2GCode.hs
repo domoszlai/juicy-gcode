@@ -205,7 +205,7 @@ renderTrees :: TransformationMatrix -> [SVG.Tree] -> [DrawOp]
 renderTrees m es = concat $ map (renderTree m) es
 
 main = do
-    mbDoc <- SVG.loadSvgFile "ninja_turtles.svg"
+    mbDoc <- SVG.loadSvgFile "test.svg"
     case mbDoc of
         (Just doc) -> print (show (renderTrees identityMatrix (SVG._elements doc)))
         otherwise  -> print "Something went wrong"
