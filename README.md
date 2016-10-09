@@ -25,7 +25,7 @@ Arcs, circles and ellipses can be easily approximated with bezier curves with a 
 
 ### Stage 2
 
-Cubic bezier curves are approximated with [Biarcs](https://en.wikipedia.org/wiki/Biarc) using the algorithm described in [[1]](http://www.itc.ktu.lt/index.php/ITC/article/view/11812)
+Cubic bezier curves are approximated with [Biarcs](https://en.wikipedia.org/wiki/Biarc) using the algorithm described in [[1](http://www.itc.ktu.lt/index.php/ITC/article/view/11812)]
 
 ## Installation
 
