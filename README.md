@@ -1,6 +1,6 @@
 ﻿## Synopsis
 
-Haskell SVG to G-code converter 
+JuicyGCode: Haskell SVG to G-code converter. It aims to support almost all of the SVG features.
 
 ## Implementation
 
@@ -40,9 +40,9 @@ For testing Stage 1, type
 
 ## Usage
 
-The development is in an early stage. Svg2Gcode does not accept any parameters, it only tries to load a file called "test.svg" from the current directory.
+Svg2Gcode has one obligatory parameter, the file name of the SVG file to convert.
 If the file is there, it displays a list of data constructors (in haskell syntax) representing the image in Stage 1 format, and which directly can be copy-pasted into TestStage1.hs.
-Finally, TestStage1.hs renders this list of drawing operations and saves the result into a file called "stage1.png" in the current directory.
+TestStage1.hs renders this list of drawing operations and saves the result into a file called "stage1.png" in the current directory.
 
 ## Limitations
 
