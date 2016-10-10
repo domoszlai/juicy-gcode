@@ -6,6 +6,9 @@ import Types
 import Transformation
 import SvgArcSegment
 
+mapTuple :: (a -> b) -> (a, a) -> (b, b)
+mapTuple f (a1, a2) = (f a1, f a2)
+
 fromSvgPoint :: SVG.Point -> Point
 fromSvgPoint (x,y) = (fromSvgNumber x, fromSvgNumber y)     
 
@@ -145,20 +148,23 @@ renderTree m (SVG.PathTree p) = map (transformDrawOp tr) $ renderPathCommands (0
    where
         tr = applyTransformations m (SVG._transform (SVG._pathDrawAttributes p))
 
--- TODO: render rounded corners
-renderTree m (SVG.RectangleTree r) = [DMoveTo p0, DLineTo p1, DLineTo p2, DLineTo p3, DLineTo p0]
+renderTree m (SVG.RectangleTree r) 
+    | rx == 0.0 && ry == 0.0
+        = map (transformDrawOp tr) [DMoveTo (x,y), DLineTo (x+w,y), DLineTo (x+w,y+h), DLineTo (x,y+h), DLineTo (x,y)]
+    | otherwise 
+        = map (transformDrawOp tr) 
+              ([DMoveTo (x,y+ry)]     ++ convertSvgArc (x,y+ry) rx ry 0 False True (x+rx, y) ++
+               [DLineTo (x+w-rx,y)]   ++ convertSvgArc (x+w-rx,y) rx ry 0 False True (x+w, y+ry) ++
+               [DLineTo (x+w,y+h-ry)] ++ convertSvgArc (x+w,y+h-ry) rx ry 0 False True (x+w-rx, y+h) ++
+               [DLineTo (x+rx,y+h)]   ++ convertSvgArc (x+rx, y+h) rx ry 0 False True (x, y+h-ry) ++
+               [DLineTo (x,y+ry)])
     where
         (x,y) = fromSvgPoint (SVG._rectUpperLeftCorner r)
         w = fromSvgNumber (SVG._rectWidth r)
         h = fromSvgNumber (SVG._rectHeight r)
-         
-        tr = applyTransformations m (SVG._transform (SVG._rectDrawAttributes r))
-         
-        p0 = transformPoint tr (x,y)
-        p1 = transformPoint tr (x+w,y)
-        p2 = transformPoint tr (x+w,y+h)
-        p3 = transformPoint tr (x,y+h)
-       
+        (rx, ry) = mapTuple fromSvgNumber (SVG._rectCornerRadius r)
+        tr = applyTransformations m (SVG._transform (SVG._rectDrawAttributes r))    
+    
 renderTree m (SVG.LineTree l) = [DMoveTo p1, DLineTo p2]
     where
         p1 = transformPoint tr (fromSvgPoint (SVG._linePoint1 l))
@@ -205,7 +211,7 @@ renderTrees :: TransformationMatrix -> [SVG.Tree] -> [DrawOp]
 renderTrees m es = concat $ map (renderTree m) es
 
 main = do
-    mbDoc <- SVG.loadSvgFile "test.svg"
+    mbDoc <- SVG.loadSvgFile "testrect.svg"
     case mbDoc of
         (Just doc) -> print (show (renderTrees identityMatrix (SVG._elements doc)))
         otherwise  -> print "Something went wrong"

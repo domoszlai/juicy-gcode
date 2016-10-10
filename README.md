@@ -1,4 +1,4 @@
-## Synopsis
+﻿## Synopsis
 
 Haskell SVG to G-code converter 
 
@@ -47,8 +47,8 @@ Finally, TestStage1.hs renders this list of drawing operations and saves the res
 ## Limitations
 
 For the time being, only Stage 1 is implemented, with the following missing features:
-* rounded-cornered rectangles (would be easy)
-* text (would be easy with e.g. [FontyFruity](https://hackage.haskell.org/package/FontyFruity))
-* filling (probably not easy)
+* text (easy with e.g. [FontyFruity](https://hackage.haskell.org/package/FontyFruity))
+* filling (moderately difficult)
+* clipping (probably not easy, maybe once)
 * images (not planned)
 
