@@ -2,6 +2,8 @@ import qualified Graphics.Svg as SVG
 import qualified Graphics.Svg.CssTypes as CSS
 import qualified Linear
 
+import System.Environment
+
 import Types
 import Transformation
 import SvgArcSegment
@@ -211,8 +213,12 @@ renderTrees :: TransformationMatrix -> [SVG.Tree] -> [DrawOp]
 renderTrees m es = concat $ map (renderTree m) es
 
 main = do
-    mbDoc <- SVG.loadSvgFile "testrect.svg"
-    case mbDoc of
-        (Just doc) -> print (show (renderTrees identityMatrix (SVG._elements doc)))
-        otherwise  -> print "Something went wrong"
+    args <- getArgs 
+    case args of
+        [fn] -> do 
+                mbDoc <- SVG.loadSvgFile fn
+                case mbDoc of
+                    (Just doc) -> print (show (renderTrees identityMatrix (SVG._elements doc)))
+                    otherwise  -> print "Error during opening the SVG file"
+        _    -> print "Usage: svg2gcode svgfile"
 
