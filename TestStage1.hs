@@ -2,8 +2,6 @@ import Codec.Picture( PixelRGBA8( .. ), writePng )
 import Graphics.Rasterific
 import Graphics.Rasterific.Texture
 
-import Data.List.Split
-
 import GHC.Float
 
 import Types
