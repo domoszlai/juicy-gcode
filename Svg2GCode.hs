@@ -44,7 +44,7 @@ renderPathCommands firstp currentp _ (SVG.MoveTo origin (p:ps):ds)
         ap = toAbsolute currentp origin (fromRPoint p)
         
         cont [] = ds
-        cont ps = SVG.MoveTo origin ps : ds
+        cont ps = SVG.LineTo origin ps : ds
         
 renderPathCommands firstp currentp _ (SVG.LineTo origin (p:ps):ds) 
     = DLineTo ap : renderPathCommands firstp ap Nothing (cont ps)
