@@ -31,13 +31,18 @@ applyTransformations :: TransformationMatrix -> Maybe [SVG.Transformation] -> Tr
 applyTransformations m Nothing = m
 applyTransformations m (Just ts) = foldl applyTransformation m ts
 
+radiansPerDegree = pi / 180.0
+
 -- https://developer.mozilla.org/en/docs/Web/SVG/Attribute/transform
 applyTransformation m (SVG.TransformMatrix a b c d e f) = multStd m (fromElements [a,b,c,d,e,f])
 applyTransformation m (SVG.Translate x y) = multStd m (fromElements [1,0,0,1,x,y])
 applyTransformation m (SVG.Scale sx mbSy) = multStd m (fromElements [sx,0,0,maybe sx id mbSy,0,0])
-applyTransformation m (SVG.Rotate a Nothing) = multStd m (fromElements [cos(a),sin(a),-sin(a),cos(a),0,0])
+applyTransformation m (SVG.Rotate a Nothing) 
+    = multStd m (fromElements [cos(r),sin(r),-sin(r),cos(r),0,0])
+    where
+        r = a * radiansPerDegree
 applyTransformation m (SVG.Rotate a (Just (x, y))) = applyTransformations m (Just [SVG.Translate x y , SVG.Rotate a Nothing , SVG.Translate (-x) (-y)])
-applyTransformation m (SVG.SkewX a) = multStd m (fromElements [1,0,tan(a),1,0,0])
-applyTransformation m (SVG.SkewY a) = multStd m (fromElements [1,tan(a),0,1,0,0])
+applyTransformation m (SVG.SkewX a) = multStd m (fromElements [1,0,tan(a*radiansPerDegree),1,0,0])
+applyTransformation m (SVG.SkewY a) = multStd m (fromElements [1,tan(a*radiansPerDegree),0,1,0,0])
 applyTransformation m (SVG.TransformUnknown) = m
 

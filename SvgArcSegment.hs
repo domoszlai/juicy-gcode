@@ -4,7 +4,7 @@ module SvgArcSegment (
 
 import Types                     
                      
-radiansPerDegree = pi / 180.0;
+radiansPerDegree = pi / 180.0
 
 iif True t f = t 
 iif False t f = f
