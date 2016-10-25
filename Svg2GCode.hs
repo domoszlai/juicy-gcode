@@ -212,13 +212,15 @@ renderTree _ _ = []
 renderTrees :: TransformationMatrix -> [SVG.Tree] -> [DrawOp]
 renderTrees m es = concat $ map (renderTree m) es
 
+stage1 doc = renderTrees identityMatrix (SVG._elements doc)
+
 main = do
     args <- getArgs 
     case args of
         [fn] -> do 
                 mbDoc <- SVG.loadSvgFile fn
                 case mbDoc of
-                    (Just doc) -> print (show (renderTrees identityMatrix (SVG._elements doc)))
+                    (Just doc) -> print (show (stage1 doc))
                     otherwise  -> print "Error during opening the SVG file"
         _    -> print "Usage: svg2gcode svgfile"
 
