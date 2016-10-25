@@ -1,7 +1,8 @@
 module BiArc ( BiArc (..)
-                   , pointAt
-                   , arcLength
-                   ) where
+             , create
+             , pointAt
+             , arcLength
+             ) where
       
 import qualified CircularArc as CA
 import qualified Line as L
