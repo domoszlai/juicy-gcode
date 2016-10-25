@@ -17,8 +17,8 @@ data CubicBezier = CubicBezier { _p1 :: V2 Double
                                } deriving Show
                                
 pointAt :: CubicBezier -> Double -> V2 Double
-pointAt bezier t =  (1 - t ** 3) *^ _p1 bezier + 
-                    (1 - t ** 2) * 3 *^ _c1 bezier +
+pointAt bezier t =  ((1 - t) ** 3) *^ _p1 bezier + 
+                    ((1 - t) ** 2) * 3 * t *^ _c1 bezier +
                     (t ** 2) * (1 - t) * 3 *^ _c2 bezier +
                     (t ** 3) *^ _p2 bezier
                                

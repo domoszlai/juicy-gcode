@@ -1,7 +1,6 @@
 module Approx ( bezier2biarc
               ) where
-          
-          
+                    
 import qualified CubicBezier as B
 import qualified BiArc as BA          
 import qualified Line as L 
@@ -12,6 +11,7 @@ import Data.Complex
 
 iif True t f = t 
 iif False t f = f   
+
 
 bezier2biarc :: B.CubicBezier 
              -> Double
@@ -45,9 +45,15 @@ bezier2biarc bezier samplingStep tolerance
                 (b2, b3) = B.bezierSplitAt toSplit it2
 
         byInflection False False = approxOne bezier
-                       
+         
+        -- TODO: make it tail recursive
         approxOne :: B.CubicBezier -> [BA.BiArc]
-        approxOne bezier = []
+        approxOne bezier 
+            | maxDistance > tolerance
+                = let (b1, b2) = B.bezierSplitAt bezier maxDistanceAt 
+                   in approxOne b1 ++ approxOne b2
+            | otherwise
+                = [biarc]
             where
                 -- V: Intersection point of tangent lines
                 t1 = L.fromPoints (B._p1 bezier) (B._c1 bezier)
@@ -66,8 +72,8 @@ bezier2biarc bezier samplingStep tolerance
                 -- calculate the error
                 nrPointsToCheck = (BA.arcLength biarc) / samplingStep
                 parameterStep = 1 / nrPointsToCheck
-                
-                maxDistance = maxDistance' 0 0 0
+                                
+                (maxDistance, maxDistanceAt) = maxDistance' 0 0 0
                 
                 maxDistance' m mt t 
                     | t <= 1
@@ -80,6 +86,8 @@ bezier2biarc bezier samplingStep tolerance
         
 -----------------------------------------------------------------------------    
 -- just a very basic test
+
+b1 = B.CubicBezier (V2 100 500) (V2 150 100) (V2 500 150) (V2 350 350)
         
--- main = do
---    print (show (intersection (fromPoints (V2 262.722 237.4941) (V2 290.2062 262.8059)) (fromPoints (V2 500 400) (V2 348.4515 324.2258))))
+main = do
+    print (show (bezier2biarc b1 5 1))
