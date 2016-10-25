@@ -47,7 +47,7 @@ TestStage1.hs renders this list of drawing operations and saves the result into 
 ## Limitations
 
 For the time being, only Stage 1 is implemented, with the following missing features:
-* text (easy with e.g. [FontyFruity](https://hackage.haskell.org/package/FontyFruity))
+* text (easy with e.g. [FontyFruity](https://hackage.haskell.org/package/FontyFruity), maybe once, you can convert text to curves easily anyway)
 * filling (moderately difficult)
 * clipping (probably not easy, maybe once)
 * images (not planned)
