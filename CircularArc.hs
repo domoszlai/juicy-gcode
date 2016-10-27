@@ -11,8 +11,8 @@ data CircularArc = CircularArc { _c :: V2 Double
                                , _r :: Double
                                , _startAngle :: Double
                                , _sweepAngle :: Double
-                               , p1 :: V2 Double
-                               , p2 :: V2 Double
+                               , _p1 :: V2 Double
+                               , _p2 :: V2 Double
                                } deriving Show
 
 isClockwise :: CircularArc -> Bool

@@ -12,7 +12,6 @@ import Data.Complex
 iif True t f = t 
 iif False t f = f   
 
-
 bezier2biarc :: B.CubicBezier 
              -> Double
              -> Double
@@ -48,18 +47,18 @@ bezier2biarc bezier samplingStep tolerance
          
         -- TODO: make it tail recursive
         approxOne :: B.CubicBezier -> [BA.BiArc]
-        approxOne bezier 
+        approxOne bezier
             | maxDistance > tolerance
                 = let (b1, b2) = B.bezierSplitAt bezier maxDistanceAt 
                    in approxOne b1 ++ approxOne b2
             | otherwise
-                = [biarc]
+                = [biarc] 
             where
                 -- V: Intersection point of tangent lines
                 t1 = L.fromPoints (B._p1 bezier) (B._c1 bezier)
                 t2 = L.fromPoints (B._p2 bezier) (B._c2 bezier)
                 v = L.intersection t1 t2
-        
+
                 -- G: incenter point of the triangle (P1, V, P2)
                 dP2V = distance (B._p2 bezier) v
                 dP1V = distance (B._p1 bezier) v
@@ -83,11 +82,13 @@ bezier2biarc bezier samplingStep tolerance
                     where
                         d = distance (BA.pointAt biarc t) (B.pointAt bezier t)
                         nt = t + parameterStep
-        
+
 -----------------------------------------------------------------------------    
 -- just a very basic test
 
 b1 = B.CubicBezier (V2 100 500) (V2 150 100) (V2 500 150) (V2 350 350)
+b2 = B.CubicBezier (V2 1233.89831 685.0169000000001) (V2 1233.89831 693.0169000000001)
+                   (V2 1230.5649766666668 701.0169000000001) (V2 1223.89831 709.0169000000001)
         
 main = do
-    print (show (bezier2biarc b1 5 1))
+    print (show (bezier2biarc b2 5 1))

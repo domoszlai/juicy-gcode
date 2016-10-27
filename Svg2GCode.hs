@@ -2,12 +2,32 @@ import qualified Graphics.Svg as SVG
 import qualified Graphics.Svg.CssTypes as CSS
 import qualified Linear
 
+import Data.List
+
 import System.Environment
 
 import Types
 import Transformation
 import SvgArcSegment
+import Approx
 
+import qualified CircularArc as CA
+import qualified BiArc as BA
+import qualified CubicBezier as B
+
+off = "G0 Z10"
+on = "G0 Z0"
+
+toString gs = intercalate "\n" (toString' gs (0,0) True)
+    where
+        toString' (GMoveTo p@(x,y) : gs) _ False = ("G0 X"++show x++" Y"++show y ) : toString' gs p False
+        toString' (GMoveTo p@(x,y) : gs) _ True = off : ("G0 X"++show x++" Y"++show y ) : toString' gs p False
+        toString' gs cp False = on : toString' gs cp True
+        toString' (GLineTo (x,y) : gs) cp True = ("G1 X"++show x++" Y"++show y ) : toString' gs cp True
+        toString' (GArcTo (ox,oy) (x,y) True : gs) cp@(cx,cy) True = ("G2 X"++show x++" Y"++show y++ "I"++show (ox-cx)++ " J"++show (oy-cy)) : toString' gs (x,y) True
+        toString' (GArcTo (ox,oy) (x,y) False : gs) cp@(cx,cy) True = ("G3 X"++show x++" Y"++show y++ "I"++show (ox-cx)++ " J"++show (oy-cy)) : toString' gs (x,y) True
+        toString' [] _ _ = []
+        
 mapTuple :: (a -> b) -> (a, a) -> (b, b)
 mapTuple f (a1, a2) = (f a1, f a2)
 
@@ -16,6 +36,12 @@ fromSvgPoint (x,y) = (fromSvgNumber x, fromSvgNumber y)
 
 fromRPoint :: SVG.RPoint -> Point
 fromRPoint (Linear.V2 x y) = (x, y)   
+     
+toPoint :: Linear.V2 Double -> Point
+toPoint (Linear.V2 x y) = (x, y)       
+     
+fromPoint :: Point -> Linear.V2 Double
+fromPoint (x, y) = (Linear.V2 x y)     
      
 -- TODO: configurable DPI, em, percentage
 fromSvgNumber :: SVG.Number -> Double
@@ -212,15 +238,30 @@ renderTree _ _ = []
 renderTrees :: TransformationMatrix -> [SVG.Tree] -> [DrawOp]
 renderTrees m es = concat $ map (renderTree m) es
 
+stage1 :: SVG.Document -> [DrawOp]
 stage1 doc = renderTrees identityMatrix (SVG._elements doc)
 
+-- TODO: make it tail recursive
+stage2 :: [DrawOp] -> [GCodeOp]
+stage2 ds = convert ds (Linear.V2 0 0)
+    where
+        convert [] _ = []
+        convert (DMoveTo p:ds) _ = GMoveTo p : convert ds (fromPoint p)
+        convert (DLineTo p:ds) _ = GLineTo p : convert ds (fromPoint p)
+        convert (DBezierTo c1 c2 p2:ds) cp = concat (map biarc2garc biarcs) ++ convert ds (fromPoint p2)
+            where
+                biarcs = bezier2biarc (B.CubicBezier cp (fromPoint c1) (fromPoint c2) (fromPoint p2)) 5 1
+                biarc2garc biarc = [arc2garc (BA._a1 biarc), arc2garc (BA._a2 biarc)] 
+                arc2garc arc = GArcTo (toPoint (CA._c arc)) (toPoint (CA._p2 arc)) (CA.isClockwise arc)       
+                
 main = do
     args <- getArgs 
     case args of
         [fn] -> do 
                 mbDoc <- SVG.loadSvgFile fn
                 case mbDoc of
-                    (Just doc) -> print (show (stage1 doc))
+                    (Just doc) -> print (toString $ stage2 (stage1 doc))
+--                    (Just doc) -> print (show (stage2 $ stage1 doc))
                     otherwise  -> print "Error during opening the SVG file"
         _    -> print "Usage: svg2gcode svgfile"
 

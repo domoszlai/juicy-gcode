@@ -32,15 +32,15 @@ create p1 t1 p2 t2 t = BiArc (CA.CircularArc c1 r1 startAngle1 sweepAngle1 p1 t)
         cw = osum  < 0
         
         -- Calculate perpendicular lines to the tangent at P1 and P2
-        tl1 = L.throughPoint p1 (-1 / (t1 ^. _y  / t1 ^. _x))
-        tl2 = L.throughPoint p2 (-1 / (t2 ^. _y  / t2 ^. _x))
+        tl1 = L.createPerpendicularAt p1 (p1 + t1)
+        tl2 = L.createPerpendicularAt p2 (p2 + t2)
         
         -- Calculate the perpendicular bisector of P1T and P2T
-        p1t2 = (p1 + t) ^* (0.5)
-        pb_p1t = L.throughPoint p1t2 (-1 / L.slope p1 t)
+        p1t2 = (p1 + t) ^/ 2
+        pb_p1t = L.createPerpendicularAt p1t2 t
             
-        p2t2 = (p2 + t) ^* (0.5)
-        pb_p2t = L.throughPoint p2t2 (-1 / L.slope p2 t)            
+        p2t2 = (p2 + t) ^/ 2
+        pb_p2t = L.createPerpendicularAt p2t2 t           
             
         -- The origo of the circles are at the intersection points
         c1 = L.intersection tl1 pb_p1t

@@ -2,6 +2,7 @@
 module Types ( Point
              , DArcDir
              , DrawOp (..)
+             , GCodeOp (..)
              ) where
 
 -- type Command = String
@@ -15,6 +16,8 @@ data DrawOp = DMoveTo Point
             | DBezierTo Point Point Point   -- Control point1, control point2, end point 
               deriving Show
               
+-- this is basically what GCode can do
 data GCodeOp = GMoveTo Point
-             | GLineTo Point                  -- End point
-             | GArcTo Point Point Point Bool  -- Center point, start point, end point, clockwise
+             | GLineTo Point                -- End point
+             | GArcTo Point Point Bool      -- Center point, end point, clockwise
+               deriving Show             
