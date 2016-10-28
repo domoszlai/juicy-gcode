@@ -3,6 +3,7 @@ import qualified Graphics.Svg.CssTypes as CSS
 import qualified Linear
 
 import Data.List
+import Text.Printf
 
 import System.Environment
 
@@ -15,19 +16,32 @@ import qualified CircularArc as CA
 import qualified BiArc as BA
 import qualified CubicBezier as B
 
-off = "G0 Z10"
-on = "G0 Z0"
+begin = "G17\nG90\nG0 Z10\nG0 X0 Y0\nM3\nG4 P2000.000000"
+end = "G0 Z10\nM5\nM2"
+off = "G00 Z10"
+on = "G01 Z0 F10.00"
 
-toString gs = intercalate "\n" (toString' gs (0,0) True)
+toString gs = begin ++ "\n" ++ intercalate "\n" (toString' gs (0,0) True) ++ "\n" ++ end
     where
-        toString' (GMoveTo p@(x,y) : gs) _ False = ("G0 X"++show x++" Y"++show y ) : toString' gs p False
-        toString' (GMoveTo p@(x,y) : gs) _ True = off : ("G0 X"++show x++" Y"++show y ) : toString' gs p False
+        toString' (GMoveTo p@(x,y) : gs) _ False = printf "G00 X%.4f Y%.4f" x y : toString' gs p False
+        toString' (GMoveTo p@(x,y) : gs) _ True = off : printf "G00 X%.4f Y%.4f" x y : toString' gs p False
         toString' gs cp False = on : toString' gs cp True
-        toString' (GLineTo (x,y) : gs) cp True = ("G1 X"++show x++" Y"++show y ) : toString' gs cp True
-        toString' (GArcTo (ox,oy) (x,y) True : gs) cp@(cx,cy) True = ("G2 X"++show x++" Y"++show y++ "I"++show (ox-cx)++ " J"++show (oy-cy)) : toString' gs (x,y) True
-        toString' (GArcTo (ox,oy) (x,y) False : gs) cp@(cx,cy) True = ("G3 X"++show x++" Y"++show y++ "I"++show (ox-cx)++ " J"++show (oy-cy)) : toString' gs (x,y) True
+        toString' (GLineTo p@(x,y) : gs) cp True = printf "G01 X%.4f Y%.4f" x y : toString' gs p True
+        toString' (GArcTo (ox,oy) p@(x,y) cw : gs) (cx,cy) True = arcStr : toString' gs p True
+            where
+                i = ox - cx
+                j = oy - cy               
+            
+                cmd = if' cw "G03" "G02" 
+            
+                arcStr 
+                    | i < 1 || j < 1
+                        = printf "G01 X%.4f Y%.4f" x y
+                    | otherwise 
+                        = printf "%s X%.4f Y%.4f I%.4f J%.4f" cmd x y i j
+                        
         toString' [] _ _ = []
-        
+                        
 mapTuple :: (a -> b) -> (a, a) -> (b, b)
 mapTuple f (a1, a2) = (f a1, f a2)
 
@@ -260,8 +274,9 @@ main = do
         [fn] -> do 
                 mbDoc <- SVG.loadSvgFile fn
                 case mbDoc of
-                    (Just doc) -> print (toString $ stage2 (stage1 doc))
+--                    (Just doc) -> print (toString $ stage2 (stage1 doc))
 --                    (Just doc) -> print (show (stage2 $ stage1 doc))
+                    (Just doc) -> putStrLn (show (stage1 doc))
                     otherwise  -> print "Error during opening the SVG file"
         _    -> print "Usage: svg2gcode svgfile"
 

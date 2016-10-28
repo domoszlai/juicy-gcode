@@ -3,6 +3,7 @@ module Types ( Point
              , DArcDir
              , DrawOp (..)
              , GCodeOp (..)
+             , if'
              ) where
 
 -- type Command = String
@@ -21,3 +22,7 @@ data GCodeOp = GMoveTo Point
              | GLineTo Point                -- End point
              | GArcTo Point Point Bool      -- Center point, end point, clockwise
                deriving Show             
+
+-- just to make it available everywhere
+if' True t f = t 
+if' False t f = f   
