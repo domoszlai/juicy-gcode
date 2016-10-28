@@ -274,9 +274,9 @@ main = do
         [fn] -> do 
                 mbDoc <- SVG.loadSvgFile fn
                 case mbDoc of
---                    (Just doc) -> print (toString $ stage2 (stage1 doc))
---                    (Just doc) -> print (show (stage2 $ stage1 doc))
-                    (Just doc) -> putStrLn (show (stage1 doc))
+                    (Just doc) -> putStrLn (toString $ stage2 (stage1 doc))
+--                    (Just doc) -> putStrLn (show (stage2 $ stage1 doc))
+--                    (Just doc) -> putStrLn (show (stage1 doc))
                     otherwise  -> print "Error during opening the SVG file"
         _    -> print "Usage: svg2gcode svgfile"
 
