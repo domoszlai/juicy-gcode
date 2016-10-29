@@ -38,12 +38,14 @@ options = Options
      <> help "Density of the SVG file (default is 72 DPI)" ))
 
 runWithOptions :: Options -> IO ()
-runWithOptions (Options fn _ _ dpi) =
+runWithOptions (Options fn _ mbOut dpi) =
     do 
         mbDoc <- SVG.loadSvgFile fn
         case mbDoc of
-            (Just doc) -> putStrLn (toString dpi $ renderDoc dpi doc)
+            (Just doc) -> writer (toString dpi $ renderDoc dpi doc)
             otherwise  -> putStrLn "juicy-gcode: error during opening the SVG file"
+    where
+        writer = maybe putStrLn (\fn -> writeFile fn) mbOut
                             
 main :: IO ()
 main = execParser opts >>= runWithOptions
