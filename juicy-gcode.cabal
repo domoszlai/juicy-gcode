@@ -1,0 +1,23 @@
+name:                juicy-gcode
+version:             0.1.0.0
+license:             BSD3
+license-file:        LICENSE
+author:              dlacko
+maintainer:          dlacko@gmail.com
+stability:           experimental
+synopsis:            SVG to G-Code converter
+category:            Graphics
+homepage:            https://github.com/domoszlai/juicy-gcode
+bug-reports:         https://github.com/domoszlai/juicy-gcode/issues
+build-type:          Simple
+description:
+  Juicy-gcode: Haskell SVG to G-code converter. It aims to support almost all of the SVG features. It currently supports all of the shapes except images (not planned) and text (maybe once as you it can be converted to curves easily anyway). The flavor of the generated G-Code can be configured providing a configuration file. For details, see <https://github.com/domoszlai/juicy-gcode>.
+
+extra-source-files:  ChangeLog.md, README.md
+cabal-version:       >=1.10
+executable juicy-gcode
+  main-is:             Main.hs
+    
+  build-depends:       base >=4.9, svg-tree >=0.5, matrix >=0.3, text >=1.2, configurator >=0.3, optparse-applicative >=0.13, linear >=1.20, lens >=4.14
+  
+  

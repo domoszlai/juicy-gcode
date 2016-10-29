@@ -1,5 +1,3 @@
-{-# LANGUAGE OverloadedStrings #-}
-
 import qualified Graphics.Svg as SVG
 
 import Data.Text
