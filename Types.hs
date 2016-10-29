@@ -1,4 +1,3 @@
-
 module Types ( Point
              , DArcDir
              , DrawOp (..)
@@ -24,5 +23,6 @@ data GCodeOp = GMoveTo Point
                deriving Show             
 
 -- just to make it available everywhere
-if' True t f = t 
-if' False t f = f   
+if' :: Bool -> t -> t -> t
+if' True t _ = t 
+if' False _ f = f   

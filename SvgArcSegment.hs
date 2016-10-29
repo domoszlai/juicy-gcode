@@ -3,11 +3,9 @@ module SvgArcSegment (
                      ) where
 
 import Types                     
-                     
+                
+radiansPerDegree :: Double     
 radiansPerDegree = pi / 180.0
-
-iif True t f = t 
-iif False t f = f
 
 calculateVectorAngle :: Double -> Double -> Double -> Double -> Double
 calculateVectorAngle ux uy vx vy
@@ -27,7 +25,7 @@ convertSvgArc (x0,y0) radiusX radiusY angle largeArcFlag sweepFlag (x,y)
     | radiusX == 0.0 && radiusY == 0.0
         = [DLineTo (x,y)]
     | otherwise 
-        = calcSegments x0 y0 theta1 segments
+        = calcSegments x0 y0 theta1' segments'
     where
         sinPhi = sin (angle * radiansPerDegree)
         cosPhi = cos (angle * radiansPerDegree)
@@ -38,11 +36,11 @@ convertSvgArc (x0,y0) radiusX radiusY angle largeArcFlag sweepFlag (x,y)
         numerator = radiusX * radiusX * radiusY * radiusY - radiusX * radiusX * y1dash * y1dash - radiusY * radiusY * x1dash * x1dash
 
         s = sqrt(1.0 - numerator / (radiusX * radiusX * radiusY * radiusY))
-        rx   = iif (numerator < 0.0) (radiusX * s) radiusX
-        ry   = iif (numerator < 0.0) (radiusY * s) radiusY
-        root = iif (numerator < 0.0) 
+        rx   = if' (numerator < 0.0) (radiusX * s) radiusX
+        ry   = if' (numerator < 0.0) (radiusY * s) radiusY
+        root = if' (numerator < 0.0) 
                    (0.0) 
-                   ((iif ((largeArcFlag && sweepFlag) || (not largeArcFlag && not sweepFlag)) (-1.0) 1.0) * 
+                   ((if' ((largeArcFlag && sweepFlag) || (not largeArcFlag && not sweepFlag)) (-1.0) 1.0) * 
                         sqrt(numerator / (radiusX * radiusX * y1dash * y1dash + radiusY * radiusY * x1dash * x1dash)))
   
         cxdash = root * rx * y1dash / ry
@@ -51,14 +49,14 @@ convertSvgArc (x0,y0) radiusX radiusY angle largeArcFlag sweepFlag (x,y)
         cx = cosPhi * cxdash - sinPhi * cydash + (x0 + x) / 2.0
         cy = sinPhi * cxdash + cosPhi * cydash + (y0 + y) / 2.0
         
-        theta1  = calculateVectorAngle 1.0 0.0 ((x1dash - cxdash) / rx) ((y1dash - cydash) / ry)
+        theta1'  = calculateVectorAngle 1.0 0.0 ((x1dash - cxdash) / rx) ((y1dash - cydash) / ry)
         dtheta' = calculateVectorAngle ((x1dash - cxdash) / rx) ((y1dash - cydash) / ry) ((-x1dash - cxdash) / rx) ((-y1dash - cydash) / ry)
-        dtheta  = iif (not sweepFlag && dtheta' > 0) 
+        dtheta  = if' (not sweepFlag && dtheta' > 0) 
                       (dtheta' - 2 * pi)
-                      (iif (sweepFlag && dtheta' < 0) (dtheta' + 2 * pi) dtheta')
+                      (if' (sweepFlag && dtheta' < 0) (dtheta' + 2 * pi) dtheta')
   
-        segments = ceiling (abs (dtheta / (pi / 2.0)))
-        delta = dtheta / fromInteger segments
+        segments' = ceiling (abs (dtheta / (pi / 2.0)))
+        delta = dtheta / fromInteger segments'
         t = 8.0 / 3.0 * sin(delta / 4.0) * sin(delta / 4.0) / sin(delta / 2.0)
   
         calcSegments startX startY theta1 segments 
@@ -97,10 +95,10 @@ convertArc x0 y0 radius largeArcFlag sweepFlag x y = Arc (x0,y0) (x,y) (cx,cy) d
 
         radiiCheck = px1 / pr' + py1 / pr'
         
-        r = iif (radiiCheck > 1) (sqrt radiiCheck * abs radius) (abs radius)
+        r = if' (radiiCheck > 1) (sqrt radiiCheck * abs radius) (abs radius)
         pr = r * r
         
-        sign = iif (largeArcFlag == sweepFlag) (-1) 1
+        sign = if' (largeArcFlag == sweepFlag) (-1) 1
         sq' = ((pr * pr) - (pr * py1) - (pr * px1)) / ((pr * py1) + (pr * px1))
         coef = sign * sqrt (max 0.0 sq')
         cx1 = coef * y1
@@ -118,8 +116,8 @@ convertArc x0 y0 radius largeArcFlag sweepFlag x y = Arc (x0,y0) (x,y) (cx,cy) d
         
         -- compute direction. True -> Clockwise
         dir' = ux * vy - uy * vx >= 0
-        dir = iif (not sweepFlag && dir') 
+        dir = if' (not sweepFlag && dir') 
                   False 
-                  (iif (sweepFlag && not dir') True dir')
+                  (if' (sweepFlag && not dir') True dir')
 -}  
   

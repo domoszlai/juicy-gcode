@@ -5,17 +5,15 @@ import qualified Data.Configurator as C
 
 import Data.Monoid
 
-import System.Environment
 import Options.Applicative
 
-import Types
 import Render
 import GCode
                                                  
-data Options = Options { svgfile :: String
-                       , cfgfile :: Maybe String
-                       , outfile :: Maybe String
-                       , dpi     :: Int
+data Options = Options { _svgfile :: String
+                       , _cfgfile :: Maybe String
+                       , _outfile :: Maybe String
+                       , _dpi     :: Int
                        }                
                 
 options :: Parser Options
@@ -41,13 +39,13 @@ options = Options
      <> help "Density of the SVG file (default is 72 DPI)" ))
 
 runWithOptions :: Options -> IO ()
-runWithOptions (Options fn mbCfg mbOut dpi) =
+runWithOptions (Options svgFile mbCfg mbOut dpi) =
     do 
-        mbDoc <- SVG.loadSvgFile fn
+        mbDoc <- SVG.loadSvgFile svgFile
         flavor <- maybe (return defaultFlavor) readFlavor mbCfg
         case mbDoc of
             (Just doc) -> writer (toString flavor dpi $ renderDoc dpi doc)
-            otherwise  -> putStrLn "juicy-gcode: error during opening the SVG file"
+            Nothing    -> putStrLn "juicy-gcode: error during opening the SVG file"
     where
         writer = maybe putStrLn (\fn -> writeFile fn) mbOut
     

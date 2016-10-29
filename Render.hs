@@ -31,10 +31,11 @@ fromPoint (x, y) = (Linear.V2 x y)
      
 -- TODO: em, percentage
 fromSvgNumber :: Int -> SVG.Number -> Double
-fromSvgNumber dpi num = fromNumber' (CSS.toUserUnit 96 num)
+fromSvgNumber dpi num = fromNumber' (CSS.toUserUnit dpi num)
     where
         fromNumber' (SVG.Num n) = n
-          
+        fromNumber' _ = error "TODO: unhandled em or percentage"
+        
 -- current point + control point -> mirrored control point
 mirrorControlPoint :: Point -> Point -> Point 
 mirrorControlPoint (cx, cy) (cpx, cpy) = (cx + cx - cpx, cy + cy - cpy)        
@@ -46,6 +47,7 @@ bezierQ2C (qp0x, qp0y) (qp1x, qp1y) (qp2x, qp2y)
                 (qp2x + 2.0 / 3.0 * (qp1x - qp2x), qp2y + 2.0 / 3.0 * (qp1y - qp2y))
                 (qp2x, qp2y)
 
+toAbsolute :: (Double, Double) -> SVG.Origin -> (Double, Double) -> (Double, Double)
 toAbsolute _ SVG.OriginAbsolute p = p
 toAbsolute (cx,cy) SVG.OriginRelative (dx,dy) = (cx+dx, cy+dy)
 
@@ -54,7 +56,7 @@ renderDoc dpi doc = stage2 $ renderTrees identityMatrix (SVG._elements doc)
     where
         -- TODO: make it tail recursive
         stage2 :: [DrawOp] -> [GCodeOp]
-        stage2 ds = convert ds (Linear.V2 0 0)
+        stage2 dops = convert dops (Linear.V2 0 0)
             where
                 convert [] _ = []
                 convert (DMoveTo p:ds) _ = GMoveTo p : convert ds (fromPoint p)
@@ -66,13 +68,13 @@ renderDoc dpi doc = stage2 $ renderTrees identityMatrix (SVG._elements doc)
                         arc2garc arc = GArcTo (toPoint (CA._c arc)) (toPoint (CA._p2 arc)) (CA.isClockwise arc)   
 
         renderPathCommands :: Point -> Point -> Maybe Point -> [SVG.PathCommand] -> [DrawOp]
-        renderPathCommands firstp currentp _ (SVG.MoveTo origin (p:ps):ds) 
+        renderPathCommands _ currentp _ (SVG.MoveTo origin (p:ps):ds) 
             = DMoveTo ap : renderPathCommands ap ap Nothing (cont ps)
             where
                 ap = toAbsolute currentp origin (fromRPoint p)
                 
                 cont [] = ds
-                cont ps = SVG.LineTo origin ps : ds
+                cont ps' = SVG.LineTo origin ps' : ds
                 
         renderPathCommands firstp currentp _ (SVG.LineTo origin (p:ps):ds) 
             = DLineTo ap : renderPathCommands firstp ap Nothing (cont ps)
@@ -80,15 +82,15 @@ renderDoc dpi doc = stage2 $ renderTrees identityMatrix (SVG._elements doc)
                 ap = toAbsolute currentp origin (fromRPoint p)
 
                 cont [] = ds
-                cont ps = SVG.LineTo origin ps : ds        
+                cont ps' = SVG.LineTo origin ps' : ds        
                 
-        renderPathCommands firstp (cx, cy) _ (SVG.HorizontalTo SVG.OriginAbsolute (px:pxs):ds) 
+        renderPathCommands firstp (_, cy) _ (SVG.HorizontalTo SVG.OriginAbsolute (px:pxs):ds) 
             = DLineTo ap : renderPathCommands firstp ap Nothing (cont pxs)
             where
                 ap = (px,cy)
 
                 cont [] = ds
-                cont pxs = SVG.HorizontalTo SVG.OriginAbsolute pxs : ds  
+                cont pxs' = SVG.HorizontalTo SVG.OriginAbsolute pxs' : ds  
 
         renderPathCommands firstp (cx, cy) _ (SVG.HorizontalTo SVG.OriginRelative (dx:dxs):ds) 
             = DLineTo ap : renderPathCommands firstp ap Nothing (cont dxs)
@@ -96,15 +98,15 @@ renderDoc dpi doc = stage2 $ renderTrees identityMatrix (SVG._elements doc)
                 ap = (cx+dx,cy)
 
                 cont [] = ds
-                cont dxs = SVG.HorizontalTo SVG.OriginRelative dxs : ds  
+                cont dxs' = SVG.HorizontalTo SVG.OriginRelative dxs' : ds  
 
-        renderPathCommands firstp (cx, cy) _ (SVG.VerticalTo SVG.OriginAbsolute (py:pys):ds) 
+        renderPathCommands firstp (cx, _) _ (SVG.VerticalTo SVG.OriginAbsolute (py:pys):ds) 
             = DLineTo ap : renderPathCommands firstp ap Nothing (cont pys)
             where
                 ap = (cx,py)
 
                 cont [] = ds
-                cont pys = SVG.VerticalTo SVG.OriginAbsolute pys : ds  
+                cont pys' = SVG.VerticalTo SVG.OriginAbsolute pys' : ds  
 
         renderPathCommands firstp (cx, cy) _ (SVG.VerticalTo SVG.OriginRelative (dy:dys):ds) 
             = DLineTo ap : renderPathCommands firstp ap Nothing (cont dys)
@@ -112,7 +114,7 @@ renderDoc dpi doc = stage2 $ renderTrees identityMatrix (SVG._elements doc)
                 ap = (cx,cy+dy)
 
                 cont [] = ds
-                cont dys = SVG.VerticalTo SVG.OriginRelative dys : ds  
+                cont dys' = SVG.VerticalTo SVG.OriginRelative dys' : ds  
                 
         renderPathCommands firstp currentp _ (SVG.CurveTo origin ((c1,c2,p):ps):ds) 
             = DBezierTo ac1 ac2 ap : renderPathCommands firstp ap (Just ac2) (cont ps)
@@ -122,7 +124,7 @@ renderDoc dpi doc = stage2 $ renderTrees identityMatrix (SVG._elements doc)
                 ac2 = toAbsolute currentp origin (fromRPoint c2)
                 
                 cont [] = ds
-                cont ps = SVG.CurveTo origin ps : ds
+                cont ps' = SVG.CurveTo origin ps' : ds
 
         renderPathCommands firstp currentp mbControlp (SVG.SmoothCurveTo origin ((c2,p):ps):ds) 
             = DBezierTo ac1 ac2 ap : renderPathCommands firstp ap (Just ac2) (cont ps)
@@ -132,7 +134,7 @@ renderDoc dpi doc = stage2 $ renderTrees identityMatrix (SVG._elements doc)
                 ac2 = toAbsolute currentp origin (fromRPoint c2)
                 
                 cont [] = ds
-                cont ps = SVG.SmoothCurveTo origin ps : ds        
+                cont ps' = SVG.SmoothCurveTo origin ps' : ds        
                 
         renderPathCommands firstp currentp _ (SVG.QuadraticBezier origin ((c1,p):ps):ds) 
             = cbezier : renderPathCommands firstp ap (Just ac1) (cont ps)
@@ -143,7 +145,7 @@ renderDoc dpi doc = stage2 $ renderTrees identityMatrix (SVG._elements doc)
                 cbezier = bezierQ2C currentp ac1 ap
                 
                 cont [] = ds
-                cont ps = SVG.QuadraticBezier origin ps : ds
+                cont ps' = SVG.QuadraticBezier origin ps' : ds
 
         renderPathCommands firstp currentp mbControlp (SVG.SmoothQuadraticBezierCurveTo origin (p:ps):ds) 
             = cbezier : renderPathCommands firstp ap (Just ac1) (cont ps)
@@ -154,7 +156,7 @@ renderDoc dpi doc = stage2 $ renderTrees identityMatrix (SVG._elements doc)
                 cbezier = bezierQ2C currentp ac1 ap
                 
                 cont [] = ds
-                cont ps = SVG.SmoothQuadraticBezierCurveTo origin ps : ds
+                cont ps' = SVG.SmoothQuadraticBezierCurveTo origin ps' : ds
                 
         renderPathCommands firstp currentp _ (SVG.EllipticalArc origin ((rx,ry,rot,largeArcFlag,sweepFlag,p):ps):ds) 
             = convertSvgArc currentp rx ry rot largeArcFlag sweepFlag ap ++ renderPathCommands firstp ap Nothing (cont ps)
@@ -162,7 +164,7 @@ renderDoc dpi doc = stage2 $ renderTrees identityMatrix (SVG._elements doc)
                 ap = toAbsolute currentp origin (fromRPoint p)
                 
                 cont [] = ds
-                cont ps = SVG.EllipticalArc origin ps : ds
+                cont ps' = SVG.EllipticalArc origin ps' : ds
 
         renderPathCommands firstp@(fx,fy) (cx,cy) mbControlp (SVG.EndPath:ds)
             | fx /= cx || fy /= cy

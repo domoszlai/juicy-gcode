@@ -35,12 +35,12 @@ bezierSplitAt bezier t = (CubicBezier (_p1 bezier) p0 p01 dp, CubicBezier dp p12
         dp = p01 + t *^ (p12 - p01)  
        
 isClockwise :: CubicBezier -> Bool
-isClockwise bezier = sum < 0
+isClockwise bezier = s < 0
     where
-        sum = (_c1 bezier ^. _x - _p1 bezier  ^. _x) * (_c1 bezier ^. _y + _p1 bezier ^. _y)
-            + (_c2 bezier ^. _x - _c1 bezier  ^. _x) * (_c2 bezier ^. _y + _c1 bezier ^. _y)
-            + (_p2 bezier ^. _x - _c2 bezier  ^. _x) * (_p2 bezier ^. _y + _c2 bezier ^. _y)
-            + (_p1 bezier ^. _x - _p2 bezier  ^. _x) * (_p1 bezier ^. _y + _p2 bezier ^. _y)
+        s = (_c1 bezier ^. _x - _p1 bezier  ^. _x) * (_c1 bezier ^. _y + _p1 bezier ^. _y)
+          + (_c2 bezier ^. _x - _c1 bezier  ^. _x) * (_c2 bezier ^. _y + _c1 bezier ^. _y)
+          + (_p2 bezier ^. _x - _c2 bezier  ^. _x) * (_p2 bezier ^. _y + _c2 bezier ^. _y)
+          + (_p1 bezier ^. _x - _p2 bezier  ^. _x) * (_p1 bezier ^. _y + _p2 bezier ^. _y)
     
 inflectionPoints :: CubicBezier -> (Complex Double, Complex Double)
 inflectionPoints bezier = (t1, t2)
@@ -58,13 +58,3 @@ inflectionPoints bezier = (t1, t2)
     
 realInflectionPoint :: Complex Double -> Bool
 realInflectionPoint c = imagPart c == 0 && realPart c > 0 && realPart c < 1
-    
------------------------------------------------------------------------------    
--- just a very basic test
-    
-testbezier = CubicBezier (V2 100 500) (V2 350 100) (V2 100 200) (V2 500 400)
-    
-main = do
-    print (show (bezierSplitAt testbezier (realPart i1)))
-    where
-        (i1, i2) = inflectionPoints testbezier

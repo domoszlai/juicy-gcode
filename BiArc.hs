@@ -7,15 +7,12 @@ module BiArc ( BiArc (..)
 import qualified CircularArc as CA
 import qualified Line as L
 
-import Linear    
+import Linear hiding (angle)   
 import Control.Lens
 
 data BiArc = BiArc { _a1 :: CA.CircularArc
                    , _a2 :: CA.CircularArc
                    } deriving Show
-    
-iif True t f = t 
-iif False t f = f    
     
 create :: V2 Double -- Start point
        -> V2 Double -- Tangent vector at start point
@@ -82,8 +79,3 @@ pointAt arc t
 arcLength :: BiArc -> Double
 arcLength arc = CA.arcLength (_a1 arc) + CA.arcLength (_a2 arc)
         
------------------------------------------------------------------------------    
--- just a very basic test
-        
-main = do
-    print (show (create (V2 100 500) (V2 (-50) 400) (V2 350 350) (V2 (-150) 200) (V2 148.5882 531.6509)))

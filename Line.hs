@@ -38,6 +38,7 @@ slope p1 p2
     | otherwise
         = (p2 ^. _y - p1 ^. _y) / (p2 ^. _x - p1 ^. _x)
    
+nan :: Double   
 nan = 0/0   
    
 -- If the solution is not unique it actually return +/-infinity
@@ -60,8 +61,3 @@ verticalIntersection vline line = V2 x y
         x = _p vline ^. _x
         y = _m line * (x - _p line ^. _x) + _p line ^. _y
 
------------------------------------------------------------------------------    
--- just a very basic test
-        
-main = do
-    print (show (intersection (fromPoints (V2 262.722 237.4941) (V2 290.2062 262.8059)) (fromPoints (V2 500 400) (V2 348.4515 324.2258))))

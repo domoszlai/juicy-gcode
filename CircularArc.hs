@@ -27,8 +27,3 @@ pointAt arc t = V2 x y
 arcLength :: CircularArc -> Double
 arcLength arc = _r arc * abs(_sweepAngle arc)
         
------------------------------------------------------------------------------    
--- just a very basic test
-        
-main = do
-    print (show (pointAt (CircularArc (V2 925.8066 (-482.5004)) 978.8121 2.31507039 (-0.1437712) (V2 262.722046 237.4941) (V2 372.7215 325.070068)) 0.03553029))

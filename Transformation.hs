@@ -16,6 +16,7 @@ identityMatrix = identity 3
 
 fromElements :: [Double] -> TransformationMatrix
 fromElements [a,b,c,d,e,f] = fromList 3 3 [a,c,e,b,d,f,0,0,1]
+fromElements _ = error "Malformed transformation matrix"
 
 transformPoint :: TransformationMatrix -> Point -> Point
 transformPoint m (x,y) = (a * x + c * y + e, b * x + d * y + f)
@@ -31,9 +32,11 @@ applyTransformations :: TransformationMatrix -> Maybe [SVG.Transformation] -> Tr
 applyTransformations m Nothing = m
 applyTransformations m (Just ts) = foldl applyTransformation m ts
 
+radiansPerDegree :: Double
 radiansPerDegree = pi / 180.0
 
 -- https://developer.mozilla.org/en/docs/Web/SVG/Attribute/transform
+applyTransformation :: Matrix Double -> SVG.Transformation -> Matrix Double
 applyTransformation m (SVG.TransformMatrix a b c d e f) = multStd m (fromElements [a,b,c,d,e,f])
 applyTransformation m (SVG.Translate x y) = multStd m (fromElements [1,0,0,1,x,y])
 applyTransformation m (SVG.Scale sx mbSy) = multStd m (fromElements [sx,0,0,maybe sx id mbSy,0,0])

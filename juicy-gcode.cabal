@@ -20,6 +20,7 @@ executable juicy-gcode
     
   build-depends:       base >=4.9, svg-tree >=0.5, matrix >=0.3, text >=1.2, configurator >=0.3, optparse-applicative >=0.13, linear >=1.20, lens >=4.14
 
+  GHC-Options: -O2 -Wall
   default-language: Haskell2010  
 
 

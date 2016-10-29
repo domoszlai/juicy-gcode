@@ -6,31 +6,29 @@ import qualified BiArc as BA
 import qualified Line as L 
           
 import Linear    
-import Control.Lens
 import Data.Complex
 
-iif True t f = t 
-iif False t f = f   
+import Types
 
 bezier2biarc :: B.CubicBezier 
              -> Double
              -> Double
              -> [BA.BiArc]
-bezier2biarc bezier samplingStep tolerance
+bezier2biarc mbezier samplingStep tolerance
     = byInflection (B.realInflectionPoint i1) (B.realInflectionPoint i2)
     where        
-        (i1, i2) = B.inflectionPoints bezier
+        (i1, i2) = B.inflectionPoints mbezier
     
         order a b | b < a = (b, a)
                   | otherwise = (a, b)
     
         byInflection True False = approxOne b1 ++ approxOne b2
             where
-                (b1, b2) = B.bezierSplitAt bezier (realPart i1)
+                (b1, b2) = B.bezierSplitAt mbezier (realPart i1)
 
         byInflection False True = approxOne b1 ++ approxOne b2
             where
-                (b1, b2) = B.bezierSplitAt bezier (realPart i2)
+                (b1, b2) = B.bezierSplitAt mbezier (realPart i2)
     
         byInflection True True = approxOne b1 ++ approxOne b2 ++ approxOne b3
             where
@@ -40,10 +38,10 @@ bezier2biarc bezier samplingStep tolerance
                 -- at the recalculated t2 (it is on a new curve)                
                 it2 = (1 - it1) * it2'        
                 
-                (b1, toSplit) = B.bezierSplitAt bezier it1
+                (b1, toSplit) = B.bezierSplitAt mbezier it1
                 (b2, b3) = B.bezierSplitAt toSplit it2
 
-        byInflection False False = approxOne bezier
+        byInflection False False = approxOne mbezier
          
         -- TODO: make it tail recursive
         approxOne :: B.CubicBezier -> [BA.BiArc]
@@ -76,19 +74,10 @@ bezier2biarc bezier samplingStep tolerance
                 
                 maxDistance' m mt t 
                     | t <= 1
-                        = iif (d > m) (maxDistance' d t nt) (maxDistance' m mt nt)
+                        = if' (d > m) (maxDistance' d t nt) (maxDistance' m mt nt)
                     | otherwise
                         = (m, mt)
                     where
                         d = distance (BA.pointAt biarc t) (B.pointAt bezier t)
                         nt = t + parameterStep
 
------------------------------------------------------------------------------    
--- just a very basic test
-
-b1 = B.CubicBezier (V2 100 500) (V2 150 100) (V2 500 150) (V2 350 350)
-b2 = B.CubicBezier (V2 1233.89831 685.0169000000001) (V2 1233.89831 693.0169000000001)
-                   (V2 1230.5649766666668 701.0169000000001) (V2 1223.89831 709.0169000000001)
-        
-main = do
-    print (show (bezier2biarc b2 5 1))
