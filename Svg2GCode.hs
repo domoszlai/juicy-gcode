@@ -1,4 +1,9 @@
+{-# LANGUAGE OverloadedStrings #-}
+
 import qualified Graphics.Svg as SVG
+
+import Data.Text
+import qualified Data.Configurator as C
 
 import Data.Monoid
 
@@ -38,20 +43,28 @@ options = Options
      <> help "Density of the SVG file (default is 72 DPI)" ))
 
 runWithOptions :: Options -> IO ()
-runWithOptions (Options fn _ mbOut dpi) =
+runWithOptions (Options fn mbCfg mbOut dpi) =
     do 
         mbDoc <- SVG.loadSvgFile fn
+        flavor <- maybe (return defaultFlavor) readFlavor mbCfg
         case mbDoc of
-            (Just doc) -> writer (toString defaultFavor dpi $ renderDoc dpi doc)
+            (Just doc) -> writer (toString flavor dpi $ renderDoc dpi doc)
             otherwise  -> putStrLn "juicy-gcode: error during opening the SVG file"
     where
         writer = maybe putStrLn (\fn -> writeFile fn) mbOut
-   
-defultFavor = "[gcode]\nbegin: G17;G90;G0 Z10;G0 X0 Y0;M3;G4 P2000.000000\nend: G0 Z10;M5;M2\ntoolon: G00 Z10\ntooloff: G01 Z0 F10.00"   
-   
--- readConfig :: String -> GCodefavor
--- readConfig content = 
-   
+    
+toLines :: Text -> String    
+toLines t = unpack $ replace (pack ";") (pack "\n") t    
+    
+readFlavor :: FilePath -> IO GCodeFlavor
+readFlavor cfgFile = do
+  cfg          <- C.load [C.Required cfgFile]
+  begin        <- C.require cfg (pack "gcode.begin")
+  end          <- C.require cfg (pack "gcode.end")
+  toolon       <- C.require cfg (pack "gcode.toolon")
+  tooloff      <- C.require cfg (pack "gcode.tooloff")
+  return $ GCodeFlavor (toLines begin) (toLines end) (toLines toolon) (toLines tooloff)
+  
 main :: IO ()
 main = execParser opts >>= runWithOptions
   where

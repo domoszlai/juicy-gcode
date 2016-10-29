@@ -31,7 +31,7 @@ Cubic bezier curves are approximated with [Biarcs](https://en.wikipedia.org/wiki
 
 * Install the latest [Haskell Platform](https://www.haskell.org/platform/)
 * “`cabal update`”
-* “`cabal install svg-tree matrix optparse-applicative configfile`”
+* “`cabal install svg-tree matrix optparse-applicative configurator`”
 * “`runghc Svg2Gcode`”
 
 For testing Stage 1, type 
