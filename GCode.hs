@@ -1,4 +1,6 @@
-module GCode ( toString
+module GCode ( GCodeFavor(..)
+             , defaultFavor
+             , toString
              ) where
 
 import Data.List             
@@ -6,13 +8,16 @@ import Text.Printf
 
 import Types
 
-begin = "G17\nG90\nG0 Z10\nG0 X0 Y0\nM3\nG4 P2000.000000"
-end = "G0 Z10\nM5\nM2"
-off = "G00 Z10"
-on = "G01 Z0 F10.00"
+data GCodeFavor = GCodeFavor { begin   :: String
+                             , end     :: String
+                             , toolon  :: String
+                             , tooloff :: String
+                             }
 
-toString :: Int -> [GCodeOp] -> String
-toString dpi gs = begin ++ "\n" ++ intercalate "\n" (toString' gs (0,0) True) ++ "\n" ++ end
+defaultFavor =  GCodeFavor "G17\nG90\nG0 Z10\nG0 X0 Y0\nM3\nG4 P2000.000000" "G0 Z10\nM5\nM2" "G01 Z0 F10.00" "G00 Z10"
+
+toString :: GCodeFavor -> Int -> [GCodeOp] -> String
+toString (GCodeFavor begin end on off) dpi gs = begin ++ "\n" ++ intercalate "\n" (toString' gs (0,0) True) ++ "\n" ++ end
     where
         dd :: Double
         dd = fromIntegral dpi

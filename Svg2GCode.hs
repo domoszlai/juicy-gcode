@@ -42,11 +42,16 @@ runWithOptions (Options fn _ mbOut dpi) =
     do 
         mbDoc <- SVG.loadSvgFile fn
         case mbDoc of
-            (Just doc) -> writer (toString dpi $ renderDoc dpi doc)
+            (Just doc) -> writer (toString defaultFavor dpi $ renderDoc dpi doc)
             otherwise  -> putStrLn "juicy-gcode: error during opening the SVG file"
     where
         writer = maybe putStrLn (\fn -> writeFile fn) mbOut
-                            
+   
+defultFavor = "[gcode]\nbegin: G17;G90;G0 Z10;G0 X0 Y0;M3;G4 P2000.000000\nend: G0 Z10;M5;M2\ntoolon: G00 Z10\ntooloff: G01 Z0 F10.00"   
+   
+-- readConfig :: String -> GCodefavor
+-- readConfig content = 
+   
 main :: IO ()
 main = execParser opts >>= runWithOptions
   where
