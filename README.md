@@ -4,16 +4,31 @@ Juicy-gcode: Haskell SVG to G-code converter. It aims to support almost all of t
 
 ## Installation and usage
 
-* Install the latest [Haskell Platform](https://www.haskell.org/platform/) if you do not have it
+* Install the latest [Haskell Platform](https://www.haskell.org/platform/) if you do not have it yet
 * “`$ git clone https://github.com/domoszlai/juicy-gcode.git`”
 * “`$ cabal install juicy-gcode/juicy-gcode.cabal`”
 * “`$ juicy-gcode --help`”
+
+```
+juicy-gcode - The SVG to G-Code converter
+
+Usage: juicy-gcode.exe SVGFILE [-f|--flavor CONFIGFILE] [-o|--output OUTPUTFILE]
+                       [-d|--dpi DPI]
+  Convert SVGFILE to G-Code
+
+Available options:
+  -h,--help                Show this help text
+  SVGFILE                  The SVG file to be converted
+  -f,--flavor CONFIGFILE   Configuration of G-Code flavor
+  -o,--output OUTPUTFILE   The output G-Code file (default is standard output)
+  -d,--dpi DPI             Density of the SVG file (default is 72 DPI)
+```
 
 ## Configuration 
 
 The default G-Code flavor configuration file is the following:
 
-“`
+```
 gcode
 {
    begin = "G17;G90;G0 Z10;G0 X0 Y0;M3;G4 P2000.000000"
@@ -21,7 +36,7 @@ gcode
    toolon =  "G00 Z10"
    tooloff = "G01 Z0 F10.00"
 }
-`”
+```
 
 A new configuration file can be set by the “`--flavor`” or “`-f`” command line option. 
 
@@ -58,5 +73,5 @@ Arcs, circles and ellipses can be easily approximated with bezier curves with a 
 
 ### Stage 2
 
-Cubic bezier curves are approximated with [Biarcs](https://en.wikipedia.org/wiki/Biarc) using the algorithm described in [[1](http://www.itc.ktu.lt/index.php/ITC/article/view/11812)]
+Cubic bezier curves are approximated with [Biarcs](https://en.wikipedia.org/wiki/Biarc) using the algorithm described in [[1](http://www.itc.ktu.lt/index.php/ITC/article/view/11812)] and explained [here](http://dlacko.blogspot.nl/2016/10/approximating-bezier-curves-by-biarcs.html).
 
