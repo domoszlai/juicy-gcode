@@ -1,6 +1,39 @@
 ﻿## Synopsis
 
-Juicy-gcode: Haskell SVG to G-code converter. It aims to support almost all of the SVG features.
+Juicy-gcode: Haskell SVG to G-code converter. It aims to support almost all of the SVG features. The flavor of the generated G-Code can be configured providing a configuration file.
+
+## Installation and usage
+
+* Install the latest [Haskell Platform](https://www.haskell.org/platform/) if you do not have it
+* “`$ git clone https://github.com/domoszlai/juicy-gcode.git`”
+* “`$ cabal install juicy-gcode/juicy-gcode.cabal`”
+* “`$ juicy-gcode --help`”
+
+## Configuration 
+
+The default G-Code flavor configuration file is the following:
+
+“`
+gcode
+{
+   begin = "G17;G90;G0 Z10;G0 X0 Y0;M3;G4 P2000.000000"
+   end = "G0 Z10;M5;M2" 
+   toolon =  "G00 Z10"
+   tooloff = "G01 Z0 F10.00"
+}
+`”
+
+A new configuration file can be set by the “`--flavor`” or “`-f`” command line option. 
+
+Another configurable property is the resolution of the SVG image in DPI (dot per inch). It can be given by the “`--dpi`” or “`-d`” command line option. Default value is 72 DPI.
+
+## Limitations
+
+Missing features:
+* text (easy with e.g. [FontyFruity](https://hackage.haskell.org/package/FontyFruity), maybe once, you can convert text to curves easily anyway)
+* filling (moderately difficult)
+* clipping (probably not easy, maybe once)
+* images (not planned)
 
 ## Implementation
 
@@ -26,29 +59,4 @@ Arcs, circles and ellipses can be easily approximated with bezier curves with a 
 ### Stage 2
 
 Cubic bezier curves are approximated with [Biarcs](https://en.wikipedia.org/wiki/Biarc) using the algorithm described in [[1](http://www.itc.ktu.lt/index.php/ITC/article/view/11812)]
-
-## Installation
-
-* Install the latest [Haskell Platform](https://www.haskell.org/platform/)
-* “`cabal update`”
-* “`cabal install svg-tree matrix optparse-applicative configurator`”
-* “`runghc Svg2Gcode`”
-
-For testing Stage 1, type 
-* “`cabal install rasterific`”
-* “`runghc TestStage1`”
-
-## Usage
-
-Svg2Gcode has one obligatory parameter, the file name of the SVG file to convert.
-If the file is there, it displays a list of data constructors (in haskell syntax) representing the image in Stage 1 format, and which directly can be copy-pasted into TestStage1.hs.
-TestStage1.hs renders this list of drawing operations and saves the result into a file called "stage1.png" in the current directory.
-
-## Limitations
-
-For the time being, only Stage 1 is implemented, with the following missing features:
-* text (easy with e.g. [FontyFruity](https://hackage.haskell.org/package/FontyFruity), maybe once, you can convert text to curves easily anyway)
-* filling (moderately difficult)
-* clipping (probably not easy, maybe once)
-* images (not planned)
 
