@@ -23,5 +23,7 @@ executable juicy-gcode
   GHC-Options: -Wall
   default-language: Haskell2010  
 
-
+Source-repository head
+  Type:     git
+  Location: https://github.com/domoszlai/juicy-gcode
   
