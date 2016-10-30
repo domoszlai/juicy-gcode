@@ -17,6 +17,8 @@ extra-source-files:  ChangeLog.md, README.md
 cabal-version:       >=1.10
 executable juicy-gcode
   main-is:             Main.hs
+
+  other-modules:       Approx BiArc CircularArc CubiCBezier GCode Line Render SvgArcSegment Transformation Types
     
   build-depends:       base >=4.9, svg-tree >=0.5, matrix >=0.3, text >=1.2, configurator >=0.3, optparse-applicative >=0.13, linear >=1.20, lens >=4.14
 
