@@ -53,6 +53,7 @@ Missing features:
 ## Implementation
 
 SVG images are built using the following shapes (all of these are subject of an arbitrary affine transformation):
+
 * lines
 * circles
 * ellipses
@@ -61,6 +62,7 @@ SVG images are built using the following shapes (all of these are subject of an 
 
 
 In contrast G-Code implements only
+
 * lines
 * non-elliptic arcs
 
