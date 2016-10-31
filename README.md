@@ -60,7 +60,11 @@ Missing features:
 * elliptic arcs with optional x axis rotation
 * quadratic and cubic bezier curves
 
-##### In contrast G-Code implements only
+
+
+In contrast G-Code implements only
+
+
 
 * lines
 * non-elliptic arcs
