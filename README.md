@@ -38,9 +38,9 @@ gcode
 }
 ```
 
-A new configuration file can be set by the “`--flavor`” or “`-f`” command line option. 
+A new configuration file can be set by the `--flavor` or `-f` command line option. 
 
-Another configurable property is the resolution of the SVG image in DPI (dot per inch). It can be given by the “`--dpi`” or “`-d`” command line option. Default value is 72 DPI.
+Another configurable property is the resolution of the SVG image in DPI (dot per inch). It can be given by the `--dpi` or `-d` command line option. Default value is 72 DPI.
 
 ## Limitations
 
