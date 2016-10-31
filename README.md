@@ -1,5 +1,3 @@
-Ôªø# juicy-gcode
-
 ## Synopsis
 
 Haskell SVG to G-code converter. It aims to support almost all of the SVG features. The flavor of the generated G-Code can be configured providing a configuration file.
@@ -7,9 +5,9 @@ Haskell SVG to G-code converter. It aims to support almost all of the SVG featur
 ## Installation and usage
 
 * Install the latest [Haskell Platform](https://www.haskell.org/platform/) if you do not have it yet
-* ‚Äú`$ git clone https://github.com/domoszlai/juicy-gcode.git`‚Äù
-* ‚Äú`$ cabal install juicy-gcode/juicy-gcode.cabal`‚Äù
-* ‚Äú`$ juicy-gcode --help`‚Äù
+* `$ git clone https://github.com/domoszlai/juicy-gcode.git`
+* `$ cabal install juicy-gcode/juicy-gcode.cabal`
+* `$ juicy-gcode --help`
 
 ```
 juicy-gcode - The SVG to G-Code converter
@@ -40,9 +38,9 @@ gcode
 }
 ```
 
-A new configuration file can be set by the ‚Äú`--flavor`‚Äù or ‚Äú`-f`‚Äù command line option. 
+A new configuration file can be set by the ì`--flavor`î or ì`-f`î command line option. 
 
-Another configurable property is the resolution of the SVG image in DPI (dot per inch). It can be given by the ‚Äú`--dpi`‚Äù or ‚Äú`-d`‚Äù command line option. Default value is 72 DPI.
+Another configurable property is the resolution of the SVG image in DPI (dot per inch). It can be given by the ì`--dpi`î or ì`-d`î command line option. Default value is 72 DPI.
 
 ## Limitations
 
@@ -60,6 +58,7 @@ SVG images are built using the following shapes (all of these are subject of an 
 * ellipses
 * elliptic arcs with optional x axis rotation
 * quadratic and cubic bezier curves
+
 
 In contrast G-Code implements only
 * lines
