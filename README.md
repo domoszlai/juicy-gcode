@@ -52,8 +52,6 @@ Missing features:
 
 ## Implementation
 
-#### SVG
-
 SVG images are built using the following shapes (all of these are subject of an arbitrary affine transformation):
 
   * lines
@@ -62,12 +60,15 @@ SVG images are built using the following shapes (all of these are subject of an 
   * elliptic arcs with optional x axis rotation
   * quadratic and cubic bezier curves
 
-#### G-Code
+
 
 In contrast G-Code implements only 
 
+
+
   * lines 
   * non-elliptical arcs
+
 
 That means that only lines, circles and some arcs (non-elliptic ones without rotation) can be transleted to G-Code directly. If transformations are also counted, then
 only lines can be translated to G-Code directly as circles are not invariant under affine transformations. Because of this, the converter is implemented in two stages.
