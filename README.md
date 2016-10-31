@@ -1,6 +1,6 @@
 ## Synopsis
 
-Haskell SVG to G-code converter. It aims to support almost all of the SVG features. The flavor of the generated G-Code can be configured providing a configuration file.
+Haskell SVG to G-code converter that aims to support most SVG features. The flavor of the generated G-Code can be influenced providing a configuration file.
 
 ## Installation and usage
 
@@ -54,21 +54,16 @@ Missing features:
 
 SVG images are built using the following shapes (all of these are subject of an arbitrary affine transformation):
 
-  * lines
-  * circles
-  * ellipses
-  * elliptic arcs with optional x axis rotation
-  * quadratic and cubic bezier curves
-
-
-
-In contrast G-Code implements only 
-
-
-
-  * lines 
-  * non-elliptical arcs
-
+* lines
+* circles
+* ellipses
+* elliptic arcs with optional x axis rotation
+* quadratic and cubic bezier curves  
+  
+In contrast G-Code implements only   
+  
+* lines 
+* non-elliptical arcs    
 
 That means that only lines, circles and some arcs (non-elliptic ones without rotation) can be transleted to G-Code directly. If transformations are also counted, then
 only lines can be translated to G-Code directly as circles are not invariant under affine transformations. Because of this, the converter is implemented in two stages.

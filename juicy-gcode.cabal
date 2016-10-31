@@ -1,5 +1,5 @@
 name:                juicy-gcode
-version:             0.1.0.0
+version:             0.1.0.1
 license:             BSD3
 license-file:        LICENSE
 author:              dlacko
@@ -11,7 +11,7 @@ homepage:            https://github.com/domoszlai/juicy-gcode
 bug-reports:         https://github.com/domoszlai/juicy-gcode/issues
 build-type:          Simple
 description:
-  SVG to G-code converter that aims to support almost all of the SVG features. It currently supports all of the shapes except images and text. The flavor of the generated G-Code can be configured providing a configuration file.
+  SVG to G-code converter that aims to support most SVG features. The flavor of the generated G-Code can be influenced providing a configuration file.
 
 extra-source-files:  ChangeLog.md, README.md
 cabal-version:       >=1.10
