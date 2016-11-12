@@ -50,6 +50,11 @@ Missing features:
 * clipping (probably not easy, maybe once)
 * images (not planned)
 
+## Testing and bugs
+
+There is a JavaScript [hanging plotter simulator](https://github.com/domoszlai/hanging-plotter-simulator) mainly developed to test the generated gcode. 
+Please file an issue if you run into a problem (or drop me an email to dlacko @ gmail.com).
+
 ## Implementation
 
 SVG images are built using the following shapes (all of these are subject of an arbitrary affine transformation):
