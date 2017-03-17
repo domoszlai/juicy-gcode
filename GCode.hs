@@ -38,7 +38,8 @@ toString (GCodeFlavor begin end on off) dpi gops = begin ++ "\n" ++ intercalate 
                 cmd = if' cw "G03" "G02" 
             
                 arcStr 
-                    | (mm i) < 1 || (mm i) < 1
+                    -- avoid tiny arcs
+                    | (mm $ abs i) < 1 && (mm $ abs j) < 1
                         = printf "G01 X%.4f Y%.4f" (mm x) (mm y)
                     | otherwise 
                         = printf "%s X%.4f Y%.4f I%.4f J%.4f" cmd (mm x) (mm y) (mm i) (mm j)
