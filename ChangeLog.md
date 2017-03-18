@@ -1,5 +1,9 @@
 # Revision history for juicy-gcode
 
+## 0.1.0.2  -- 2017-03-18
+
+* Fix generating arcs with negative I or J
+
 ## 0.1.0.1  -- 2016-10-31
 
 * Minor changes to the package description and README.
