@@ -18,7 +18,7 @@ cabal-version:       >=1.10
 executable juicy-gcode
   main-is:             Main.hs
 
-  other-modules:       Approx BiArc CircularArc CubiCBezier GCode Line Render SvgArcSegment Transformation Types
+  other-modules:       Approx BiArc CircularArc CubicBezier GCode Line Render SvgArcSegment Transformation Types
     
   build-depends:       base >=4.8 && <4.10, svg-tree >=0.5 && <0.6, matrix >=0.3 && <0.4,text >=1.2 && <1.3, configurator >=0.3 && <0.4, optparse-applicative >=0.13 && <0.14, linear >=1.20 && <1.21, lens >=4.14 && <4.15
 
