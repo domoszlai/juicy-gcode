@@ -1,5 +1,9 @@
 # Revision history for juicy-gcode
 
+## 0.1.0.3  -- 2017-03-19
+
+* Fix typo in cabal file
+
 ## 0.1.0.2  -- 2017-03-18
 
 * Fix generating arcs with negative I or J
