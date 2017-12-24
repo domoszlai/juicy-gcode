@@ -1,4 +1,3 @@
-language: haskell
 sudo: false
 os:
   - linux
