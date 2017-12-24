@@ -1,3 +1,8 @@
+Juicy-gcode: A Haskell SVG to GCode converter 
+==================================
+
+[![Hackage](https://img.shields.io/hackage/v/juicy-gcode.svg)](https://hackage.haskell.org/package/juicy-gcode)
+
 ## Synopsis
 
 Haskell SVG to G-code converter that aims to support most SVG features. The flavor of the generated G-Code can be influenced providing a configuration file.
