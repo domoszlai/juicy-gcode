@@ -1,0 +1,26 @@
+sudo: false
+os:
+  - linux
+  - osx
+
+# Caching so the next build will be fast too.
+cache:
+  directories:
+    - $HOME/.local/bin
+    - $HOME/.stack  
+
+before_install:
+  - | # Install stack.
+    if test ! -f "$HOME/.local/bin/stack"
+    then
+      URL="https://www.stackage.org/stack/$TRAVIS_OS_NAME-x86_64"
+      curl --location "$URL" > stack.tar.gz
+      gunzip stack.tar.gz
+      tar -x -f stack.tar --strip-components 1
+      mkdir -p "$HOME/.local/bin"
+      mv stack "$HOME/.local/bin/"
+    fi
+script:
+  - stack setup
+  - stack --no-terminal build --pedantic
+  - stack sdist
