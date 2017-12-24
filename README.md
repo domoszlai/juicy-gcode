@@ -4,9 +4,10 @@ Haskell SVG to G-code converter that aims to support most SVG features. The flav
 
 ## Installation and usage
 
-* Install the latest [Haskell Platform](https://www.haskell.org/platform/) if you do not have it yet
+* Install [Stack](https://docs.haskellstack.org/en/stable/install_and_upgrade/) if you do not have it yet
 * `$ git clone https://github.com/domoszlai/juicy-gcode.git`
-* `$ cabal install juicy-gcode/juicy-gcode.cabal`
+* `$ stack build`
+* `$ stack install`
 * `$ juicy-gcode --help`
 
 ```
