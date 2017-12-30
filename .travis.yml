@@ -20,10 +20,12 @@ before_install:
       mkdir -p "$HOME/.local/bin"
       mv stack "$HOME/.local/bin/"
     fi
+    
 script:
   - stack setup
   - stack --no-terminal build --pedantic
   - stack sdist
+
 before_deploy:
   - export LOCAL_INSTALL_ROOT=$(stack path --local-install-root)
   - if [ "$TRAVIS_OS_NAME" == "osx" ]
@@ -43,3 +45,12 @@ before_deploy:
   - popd
   - bundle/${OS_NAME}.tar.gz > bundle/${OS_NAME}.sha
   - popd
+
+deploy:
+  provider: releases
+  api_key: $RELEASE_KEY
+  file:
+    - bundle/$OS_NAME.tar.gz
+    - bundle/$OS_NAME.sha
+  skip_cleanup: true
+  
