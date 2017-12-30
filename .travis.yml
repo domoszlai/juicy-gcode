@@ -24,3 +24,22 @@ script:
   - stack setup
   - stack --no-terminal build --pedantic
   - stack sdist
+before_deploy:
+  - export LOCAL_INSTALL_ROOT=$(stack path --local-install-root)
+  - if [ "$TRAVIS_OS_NAME" == "osx" ]
+    then
+      export OS_NAME=macos
+    else
+      export OS_NAME=linux64
+    fi
+    
+  - pushd $(stack path --project-root)
+  - mkdir -p bundle/build/juicy-gcode
+  - cp "$LOCAL_INSTALL_ROOT/bin/juicy-gcode" bundle/build/juicy-gcode
+  - cp README.md bundle/build/juicy-gcode
+  - cp LICENSE bundle/build/juicy-gcode
+  - pushd bundle/build
+  - tar -zcvf ../${OS_NAME}.tar.gz juicy-gcode
+  - popd
+  - bundle/${OS_NAME}.tar.gz > bundle/${OS_NAME}.sha
+  - popd
