@@ -47,6 +47,7 @@ before_deploy:
     pushd bundle/build
     tar -zcvf ../juicy-gcode-${VERSION}-${OS_NAME}.tar.gz juicy-gcode-${VERSION}
     popd
+    # FCIV -md5 -sha1 bundle/juicy-gcode-${VERSION}-${OS_NAME}.tar.gz > bundle/juicy-gcode-${VERSION}-${OS_NAME}.sha
     shasum bundle/juicy-gcode-${VERSION}-${OS_NAME}.tar.gz > bundle/juicy-gcode-${VERSION}-${OS_NAME}.sha
     rm -rf bundle/build
     popd
