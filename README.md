@@ -2,7 +2,7 @@ Juicy-gcode: A Haskell SVG to GCode converter
 ==================================
 
 [![Hackage](https://img.shields.io/hackage/v/juicy-gcode.svg)](https://hackage.haskell.org/package/juicy-gcode)
-[![Travis](https://secure.travis-ci.org/domoszlai/juicy-gcode.svg)](http://travis-ci.org/domoszlai/juicy-gcode)
+[![Travis](https://travis-ci.org/domoszlai/juicy-gcode.svg?branch=master)](http://travis-ci.org/domoszlai/juicy-gcode)
 ![Appveyor](https://ci.appveyor.com/api/projects/status/github/domoszlai/juicy-gcode?branch=master&svg=true)
 
 ## Synopsis
@@ -10,6 +10,9 @@ Juicy-gcode: A Haskell SVG to GCode converter
 Haskell SVG to G-code converter that aims to support most SVG features. The flavor of the generated G-Code can be influenced providing a configuration file.
 
 ## Installation and usage
+
+The easiest way is to download one of the pre-built binaries from the [releases page](https://github.com/domoszlai/juicy-gcode/releases).
+Alternatively, you can build from source code as follows:
 
 * Install [Stack](https://docs.haskellstack.org/en/stable/install_and_upgrade/) if you do not have it yet
 * `$ git clone https://github.com/domoszlai/juicy-gcode.git`
