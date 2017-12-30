@@ -29,6 +29,8 @@ script:
 before_deploy:
   - | # Build bundle 
     export LOCAL_INSTALL_ROOT=$(stack path --local-install-root)
+    # Remove "v" from tag name
+    export VERSION=${TRAVIS_TAG#?}
    
     if [ "$TRAVIS_OS_NAME" == "osx" ]
     then
@@ -38,14 +40,14 @@ before_deploy:
     fi
     
     pushd $(stack path --project-root)
-    mkdir -p bundle/build/juicy-gcode
-    cp "$LOCAL_INSTALL_ROOT/bin/juicy-gcode" bundle/build/juicy-gcode
-    cp README.md bundle/build/juicy-gcode
-    cp LICENSE bundle/build/juicy-gcode
+    mkdir -p bundle/build/juicy-gcode-${VERSION}
+    cp "$LOCAL_INSTALL_ROOT/bin/juicy-gcode" bundle/build/juicy-gcode-${VERSION}
+    cp README.md bundle/build/juicy-gcode-${VERSION}
+    cp LICENSE bundle/build/juicy-gcode-${VERSION}
     pushd bundle/build
-    tar -zcvf ../juicy-gcode-${TRAVIS_TAG}-${OS_NAME}.tar.gz juicy-gcode
+    tar -zcvf ../juicy-gcode-${VERSION}-${OS_NAME}.tar.gz juicy-gcode-${VERSION}
     popd
-    shasum bundle/juicy-gcode-${TRAVIS_TAG}-${OS_NAME}.tar.gz > bundle/juicy-gcode-${TRAVIS_TAG}-${OS_NAME}.sha
+    shasum bundle/juicy-gcode-${VERSION}-${OS_NAME}.tar.gz > bundle/juicy-gcode-${VERSION}-${OS_NAME}.sha
     rm -rf bundle/build
     popd
 
@@ -53,8 +55,8 @@ deploy:
   provider: releases
   api_key: $GITHUB_API_KEY
   file:
-    - bundle/juicy-gcode-${TRAVIS_TAG}-${OS_NAME}.tar.gz
-    - bundle/juicy-gcode-${TRAVIS_TAG}-${OS_NAME}.sha
+    - bundle/juicy-gcode-${VERSION}-${OS_NAME}.tar.gz
+    - bundle/juicy-gcode-${VERSION}-${OS_NAME}.sha
   skip_cleanup: true
   on:
     tags: true
