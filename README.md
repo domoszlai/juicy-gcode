@@ -1,5 +1,4 @@
-Juicy-gcode: A Haskell SVG to GCode converter 
-==================================
+# Juicy-gcode: A Haskell SVG to GCode converter 
 
 [![Hackage](https://img.shields.io/hackage/v/juicy-gcode.svg)](https://hackage.haskell.org/package/juicy-gcode)
 [![Travis](https://travis-ci.org/domoszlai/juicy-gcode.svg?branch=master)](http://travis-ci.org/domoszlai/juicy-gcode)
@@ -8,6 +7,8 @@ Juicy-gcode: A Haskell SVG to GCode converter
 ## Synopsis
 
 Haskell SVG to G-code converter that aims to support most SVG features. The flavor of the generated G-Code can be influenced providing a configuration file.
+Juicy-gcode, in contrast to most SVG to gcode converters, approximates bezier curves with [biarcs](http://dlacko.blogspot.nl/2016/10/approximating-bezier-curves-by-biarcs.html) instead of line segments
+that results in much better curve fit.
 
 ## Installation and usage
 
@@ -81,7 +82,7 @@ In contrast G-Code implements only
 * lines 
 * non-elliptical arcs    
 
-That means that only lines, circles and some arcs (non-elliptic ones without rotation) can be transleted to G-Code directly. If transformations are also counted, then
+That means that only lines, circles and some arcs (non-elliptic ones without rotation) can be translated to G-Code directly. If transformations are also counted, then
 only lines can be translated to G-Code directly as circles are not invariant under affine transformations. Because of this, the converter is implemented in two stages.
 
 ### Stage 1
