@@ -7,7 +7,7 @@
 ## Synopsis
 
 Haskell SVG to G-code converter that aims to support most SVG features. The flavor of the generated G-Code can be influenced providing a configuration file.
-Juicy-gcode, in contrast to most SVG to gcode converters, approximates bezier curves with [biarcs](http://dlacko.blogspot.nl/2016/10/approximating-bezier-curves-by-biarcs.html) instead of line segments
+Juicy-gcode, in contrast to most SVG to G-Code converters, approximates bezier curves with [biarcs](http://dlacko.blogspot.nl/2016/10/approximating-bezier-curves-by-biarcs.html) instead of line segments
 that results in much better curve fit.
 
 ## Installation and usage
