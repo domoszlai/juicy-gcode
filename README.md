@@ -1,4 +1,4 @@
-# Juicy-gcode: A Haskell SVG to GCode converter 
+# Juicy-gcode: A lightweight SVG to GCode converter for maximal curve fitting
 
 [![Hackage](https://img.shields.io/hackage/v/juicy-gcode.svg)](https://hackage.haskell.org/package/juicy-gcode)
 [![Travis](https://travis-ci.org/domoszlai/juicy-gcode.svg?branch=master)](http://travis-ci.org/domoszlai/juicy-gcode)
