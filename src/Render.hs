@@ -43,10 +43,17 @@ mirrorControlPoint (cx, cy) (cpx, cpy) = (cx + cx - cpx, cy + cy - cpy)
 -- convert a quadratic bezier to a cubic one
 bezierQ2C :: Point -> Point -> Point -> DrawOp
 bezierQ2C (qp0x, qp0y) (qp1x, qp1y) (qp2x, qp2y) 
-    = DBezierTo (qp0x + 2.0 / 3.0 * (qp1x - qp0x), qp0y + 2.0 / 3.0 * (qp1y - qp0y))
-                (qp2x + 2.0 / 3.0 * (qp1x - qp2x), qp2y + 2.0 / 3.0 * (qp1y - qp2y))
-                (qp2x, qp2y)
+    = createBezier (qp0x + 2.0 / 3.0 * (qp1x - qp0x), qp0y + 2.0 / 3.0 * (qp1y - qp0y))
+                   (qp2x + 2.0 / 3.0 * (qp1x - qp2x), qp2y + 2.0 / 3.0 * (qp1y - qp2y))
+                   (qp2x, qp2y)
 
+-- create a cubic bezier dta constructor from two control and one endpoints
+-- tries to simplify as well. it happens that the points actually describe a line, converting it to arcs would fail later on
+createBezier :: Point -> Point -> Point -> DrawOp 
+createBezier c1 c2 e 
+    | (c1 == c2) && (c2 == e) = DMoveTo e  
+    | otherwise = DBezierTo c1 c2 e   
+   
 toAbsolute :: (Double, Double) -> SVG.Origin -> (Double, Double) -> (Double, Double)
 toAbsolute _ SVG.OriginAbsolute p = p
 toAbsolute (cx,cy) SVG.OriginRelative (dx,dy) = (cx+dx, cy+dy)
@@ -117,7 +124,7 @@ renderDoc dpi doc = stage2 $ renderTrees identityMatrix (SVG._elements doc)
                 cont dys' = SVG.VerticalTo SVG.OriginRelative dys' : ds  
                 
         renderPathCommands firstp currentp _ (SVG.CurveTo origin ((c1,c2,p):ps):ds) 
-            = DBezierTo ac1 ac2 ap : renderPathCommands firstp ap (Just ac2) (cont ps)
+            = createBezier ac1 ac2 ap : renderPathCommands firstp ap (Just ac2) (cont ps)
             where
                 ap = toAbsolute currentp origin (fromRPoint p)
                 ac1 = toAbsolute currentp origin (fromRPoint c1)
@@ -127,7 +134,7 @@ renderDoc dpi doc = stage2 $ renderTrees identityMatrix (SVG._elements doc)
                 cont ps' = SVG.CurveTo origin ps' : ds
 
         renderPathCommands firstp currentp mbControlp (SVG.SmoothCurveTo origin ((c2,p):ps):ds) 
-            = DBezierTo ac1 ac2 ap : renderPathCommands firstp ap (Just ac2) (cont ps)
+            = createBezier ac1 ac2 ap : renderPathCommands firstp ap (Just ac2) (cont ps)
             where
                 ap = toAbsolute currentp origin (fromRPoint p)
                 ac1 = maybe ac2 (mirrorControlPoint currentp) mbControlp
