@@ -20,7 +20,7 @@ calculateVectorAngle ux uy vx vy
 -- ported from: https://github.com/vvvv/SVG/blob/master/Source/Paths/SvgArcSegment.cs
 convertSvgArc :: Point -> Double -> Double -> Double -> Bool -> Bool -> Point -> [DrawOp]
 convertSvgArc (x0,y0) radiusX radiusY angle largeArcFlag sweepFlag (x,y)
-    | x0 == x && y0 == 0
+    | x0 == x && y0 == y
         = []
     | radiusX == 0.0 && radiusY == 0.0
         = [DLineTo (x,y)]
