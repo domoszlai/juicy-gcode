@@ -3,8 +3,6 @@ import qualified Graphics.Svg as SVG
 import Data.Text
 import qualified Data.Configurator as C
 
-import Data.Monoid
-
 import Options.Applicative
 
 import Render
