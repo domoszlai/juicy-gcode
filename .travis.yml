@@ -4,10 +4,10 @@ os:
   - osx
 
 # Caching so the next build will be fast too.
-cache:
-  directories:
-    - $HOME/.local/bin
-    - $HOME/.stack  
+# cache:
+#   directories:
+#     - $HOME/.local/bin
+#     - $HOME/.stack  
 
 before_install:
   - | # Install stack.
