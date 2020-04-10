@@ -1,5 +1,13 @@
 # Revision history for juicy-gcode
 
+## 0.1.0.5.2  -- 2020-04-11
+
+* Update dependencies
+
+## 0.1.0.5.1  -- 2018-08-08
+
+* Update documentation 
+
 ## 0.1.0.5  -- 2018-08-08
 
 * Simplify special bezier curves to lines
