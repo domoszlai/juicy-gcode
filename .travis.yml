@@ -4,16 +4,16 @@ os:
   - osx
 
 # Caching so the next build will be fast too.
-# cache:
-#   directories:
-#     - $HOME/.local/bin
-#     - $HOME/.stack  
+cache:
+   directories:
+     - $HOME/.local/bin
+     - $HOME/.stack  
 
 before_install:
   - | # Install stack.
     if test ! -f "$HOME/.local/bin/stack"
     then
-      URL="https://github.com/commercialhaskell/stack/releases/download/v1.6.1/stack-1.6.1-$TRAVIS_OS_NAME.tar.gz"
+      URL="https://www.stackage.org/stack/$TRAVIS_OS_NAME-x86_64"
       curl --location "$URL" > stack.tar.gz
       gunzip stack.tar.gz
       tar -x -f stack.tar --strip-components 1

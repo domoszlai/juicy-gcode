@@ -6,7 +6,7 @@ environment:
   STACK_ROOT: c:\s
 
 install:
-  - ps: curl -OutFile stack.zip -Uri https://github.com/commercialhaskell/stack/releases/download/v1.6.1/stack-1.6.1-windows-x86_64.zip
+  - ps: curl -OutFile stack.zip -Uri https://www.stackage.org/stack/windows-x86_64
   - 7z x stack.zip stack.exe
 build_script:
   - stack.exe setup

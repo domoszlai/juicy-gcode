@@ -1,11 +1,4 @@
 resolver: lts-10.0
 allow-newer: true
-extra-deps:
-- base-4.8.0.0
-- lens-4.15.4
-- optparse-applicative-0.13.0.0
-- svg-tree-0.5
-- matrix-0.3.5.0
-- text-1.2.2.0
-- linear-1.20.7	
+
 
