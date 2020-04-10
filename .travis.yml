@@ -13,7 +13,7 @@ before_install:
   - | # Install stack.
     if test ! -f "$HOME/.local/bin/stack"
     then
-      URL="https://www.stackage.org/stack/$TRAVIS_OS_NAME-x86_64"
+      URL="https://github.com/commercialhaskell/stack/releases/download/v1.6.1/stack-1.6.1-$TRAVIS_OS_NAME.tar.gz"
       curl --location "$URL" > stack.tar.gz
       gunzip stack.tar.gz
       tar -x -f stack.tar --strip-components 1
