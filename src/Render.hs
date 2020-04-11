@@ -68,7 +68,7 @@ renderDoc dpi doc = stage2 $ renderTrees identityMatrix (SVG._elements doc)
                 convert [] _ = []
                 convert (DMoveTo p:ds) _ = GMoveTo p : convert ds (fromPoint p)
                 convert (DLineTo p:ds) _ = GLineTo p : convert ds (fromPoint p)
-                convert (DBezierTo c1 c2 p2:ds) cp = concat (map biarc2garc biarcs) ++ convert ds (fromPoint p2)
+                convert (DBezierTo c1 c2 p2:ds) cp = concatMap biarc2garc biarcs ++ convert ds (fromPoint p2)
                     where
                         biarcs = bezier2biarc (B.CubicBezier cp (fromPoint c1) (fromPoint c2) (fromPoint p2)) 5 1
                         biarc2garc biarc = [arc2garc (BA._a1 biarc), arc2garc (BA._a2 biarc)] 
