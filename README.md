@@ -25,7 +25,7 @@ Alternatively, you can build from source code as follows:
 juicy-gcode - The SVG to G-Code converter
 
 Usage: juicy-gcode.exe SVGFILE [-f|--flavor CONFIGFILE] [-o|--output OUTPUTFILE]
-                       [-d|--dpi DPI]
+                       [-d|--dpi DPI] [-m|--mirror-y-axis]
   Convert SVGFILE to G-Code
 
 Available options:
@@ -34,6 +34,7 @@ Available options:
   -f,--flavor CONFIGFILE   Configuration of G-Code flavor
   -o,--output OUTPUTFILE   The output G-Code file (default is standard output)
   -d,--dpi DPI             Density of the SVG file (default is 72 DPI)
+  -m,--mirror-y-axis       Mirror Y axis  
 ```
 
 ## Configuration 

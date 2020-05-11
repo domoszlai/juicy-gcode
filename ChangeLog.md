@@ -1,5 +1,9 @@
 # Revision history for juicy-gcode
 
+## 0.1.0.6  -- 2020-05-11
+
+* Add option to mirror Y axis
+
 ## 0.1.0.5.2  -- 2020-04-11
 
 * Update dependencies
