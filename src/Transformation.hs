@@ -1,5 +1,6 @@
 module Transformation ( TransformationMatrix
                       , identityMatrix
+                      , mirrorYMatrix
                       , transformPoint
                       , transformDrawOp
                       , applyTransformations
@@ -13,6 +14,9 @@ type TransformationMatrix = Matrix Double
              
 identityMatrix :: TransformationMatrix
 identityMatrix = identity 3
+
+mirrorYMatrix :: Double -> Double -> TransformationMatrix
+mirrorYMatrix _ h = fromElements [1, 0, 0, -1, 0, h]
 
 fromElements :: [Double] -> TransformationMatrix
 fromElements [a,b,c,d,e,f] = fromList 3 3 [a,c,e,b,d,f,0,0,1]

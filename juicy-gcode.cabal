@@ -19,7 +19,7 @@ executable juicy-gcode
   hs-source-dirs:           src
   main-is:                  Main.hs
 
-  other-modules:            Approx BiArc CircularArc CubicBezier GCode Line Render SvgArcSegment Transformation Types
+  other-modules:            Approx BiArc CircularArc CubicBezier GCode Line Render SvgArcSegment Transformation Types BoundingBox
     
   build-depends:       
     base                    >=4.8    && <5, 

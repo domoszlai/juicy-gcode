@@ -58,8 +58,16 @@ toAbsolute :: (Double, Double) -> SVG.Origin -> (Double, Double) -> (Double, Dou
 toAbsolute _ SVG.OriginAbsolute p = p
 toAbsolute (cx,cy) SVG.OriginRelative (dx,dy) = (cx+dx, cy+dy)
 
-renderDoc :: Int -> SVG.Document -> [GCodeOp]
-renderDoc dpi doc = stage2 $ renderTrees identityMatrix (SVG._elements doc)
+docTransform :: Bool -> Int-> SVG.Document -> TransformationMatrix
+docTransform False _ _ = identityMatrix
+docTransform _ dpi doc = mirrorYMatrix (fromIntegral w) (fromIntegral h)
+    where
+        (w, h) = SVG.documentSize dpi doc
+
+renderDoc :: Bool -> Int -> SVG.Document -> [GCodeOp]
+renderDoc mirrorYAxis dpi doc = stage2 $ renderTrees 
+                                            (docTransform mirrorYAxis dpi doc)
+                                            (SVG._elements doc)
     where
         -- TODO: make it tail recursive
         stage2 :: [DrawOp] -> [GCodeOp]

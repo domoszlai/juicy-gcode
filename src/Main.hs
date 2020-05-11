@@ -10,10 +10,11 @@ import Options.Applicative
 import Render
 import GCode
                                                  
-data Options = Options { _svgfile :: String
-                       , _cfgfile :: Maybe String
-                       , _outfile :: Maybe String
-                       , _dpi     :: Int
+data Options = Options { _svgfile     :: String
+                       , _cfgfile     :: Maybe String
+                       , _outfile     :: Maybe String
+                       , _dpi         :: Int
+                       , _mirrorYAxis :: Bool
                        }                
                 
 options :: Parser Options
@@ -37,14 +38,18 @@ options = Options
      <> short 'd'
      <> metavar "DPI"     
      <> help "Density of the SVG file (default is 72 DPI)" ))
+  <*> (switch
+      ( long "mirror-y-axis"
+     <> short 'm'
+     <> help "Mirror Y axis" ))
 
 runWithOptions :: Options -> IO ()
-runWithOptions (Options svgFile mbCfg mbOut dpi) =
+runWithOptions (Options svgFile mbCfg mbOut dpi mirrorYAxis) =
     do 
         mbDoc <- SVG.loadSvgFile svgFile
         flavor <- maybe (return defaultFlavor) readFlavor mbCfg
         case mbDoc of
-            (Just doc) -> writer (toString flavor dpi $ renderDoc dpi doc)
+            (Just doc) -> writer (toString flavor dpi $ renderDoc mirrorYAxis dpi doc)
             Nothing    -> putStrLn "juicy-gcode: error during opening the SVG file"
     where
         writer = maybe putStrLn (\fn -> writeFile fn) mbOut
