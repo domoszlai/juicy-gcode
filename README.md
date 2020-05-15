@@ -34,10 +34,10 @@ Available options:
   -f,--flavor CONFIGFILE   Configuration of G-Code flavor
   -o,--output OUTPUTFILE   The output G-Code file (default is standard output)
   -d,--dpi DPI             Density of the SVG file (default is 72 DPI)
-  -m,--mirror-y-axis       Mirror Y axis  
+  -m,--mirror-y-axis       Mirror Y axis
 ```
 
-## Configuration 
+## Configuration
 
 The default G-Code flavor configuration file is the following:
 
@@ -45,13 +45,13 @@ The default G-Code flavor configuration file is the following:
 gcode
 {
    begin = "G17;G90;G0 Z10;G0 X0 Y0;M3;G4 P2000.000000"
-   end = "G0 Z10;M5;M2" 
+   end = "G0 Z10;M5;M2"
    toolon =  "G00 Z10"
    tooloff = "G01 Z0 F10.00"
 }
 ```
 
-A new configuration file can be set by the `--flavor` or `-f` command line option. 
+A new configuration file can be set by the `--flavor` or `-f` command line option.
 
 Another configurable property is the resolution of the SVG image in DPI (dot per inch). It can be given by the `--dpi` or `-d` command line option. Default value is 72 DPI.
 
@@ -65,7 +65,7 @@ Missing features:
 
 ## Testing and bugs
 
-There is a JavaScript [hanging plotter simulator](https://github.com/domoszlai/hanging-plotter-simulator) mainly developed to test the generated gcode. 
+There is a JavaScript [hanging plotter simulator](https://github.com/domoszlai/hanging-plotter-simulator) mainly developed to test the generated gcode.
 Please file an issue if you run into a problem (or drop me an email to dlacko @ gmail.com).
 
 ## Implementation
@@ -76,12 +76,12 @@ SVG images are built using the following shapes (all of these are subject of an 
 * circles
 * ellipses
 * elliptic arcs with optional x axis rotation
-* quadratic and cubic bezier curves  
-  
-In contrast G-Code implements only   
-  
-* lines 
-* non-elliptical arcs    
+* quadratic and cubic bezier curves
+
+In contrast G-Code implements only
+
+* lines
+* non-elliptical arcs
 
 That means that only lines, circles and some arcs (non-elliptic ones without rotation) can be translated to G-Code directly. If transformations are also counted, then
 only lines can be translated to G-Code directly as circles are not invariant under affine transformations. Because of this, the converter is implemented in two stages.

@@ -1,5 +1,9 @@
 # Revision history for juicy-gcode
 
+## 0.1.0.7  -- 2020-05-15
+
+* Add support for the viewBox attribute
+
 ## 0.1.0.6  -- 2020-05-11
 
 * Add option to mirror Y axis
@@ -10,7 +14,7 @@
 
 ## 0.1.0.5.1  -- 2018-08-08
 
-* Update documentation 
+* Update documentation
 
 ## 0.1.0.5  -- 2018-08-08
 
