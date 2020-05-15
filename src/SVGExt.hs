@@ -3,7 +3,7 @@ module SVGExt ( documentSize
 
 import qualified Graphics.Svg as SVG
 
--- it is a replacement of SVG.documentSize as that returs Int causing a serious
+-- it is a replacement of SVG.documentSize as that returns (Int,Int) causing a serious
 -- precision loss in the final gcode
 documentSize :: Int -> SVG.Document -> (Double, Double)
 documentSize _ SVG.Document { SVG._viewBox = Just (x1, y1, x2, y2)
