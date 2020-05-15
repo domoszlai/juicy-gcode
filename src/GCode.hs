@@ -3,7 +3,7 @@ module GCode ( GCodeFlavor(..)
              , toString
              ) where
 
-import Data.List             
+import Data.List
 import Text.Printf
 
 import Types
@@ -22,10 +22,10 @@ toString (GCodeFlavor begin end on off) dpi gops = begin ++ "\n" ++ intercalate 
     where
         dd :: Double
         dd = fromIntegral dpi
-    
+
         mm :: Double -> Double
-        mm px = (px / dd) * 2.54 * 10 
-    
+        mm px = (px * 2.54 * 10) / dd 
+
         toString' (GMoveTo p@(x,y) : gs) _ False = printf "G00 X%.4f Y%.4f" (mm x) (mm y) : toString' gs p False
         toString' (GMoveTo p@(x,y) : gs) _ True = off : printf "G00 X%.4f Y%.4f" (mm x) (mm y) : toString' gs p False
         toString' gs cp False = on : toString' gs cp True
@@ -33,15 +33,15 @@ toString (GCodeFlavor begin end on off) dpi gops = begin ++ "\n" ++ intercalate 
         toString' (GArcTo (ox,oy) p@(x,y) cw : gs) (cx,cy) True = arcStr : toString' gs p True
             where
                 i = ox - cx
-                j = oy - cy               
-            
-                cmd = if' cw "G03" "G02" 
-            
-                arcStr 
+                j = oy - cy
+
+                cmd = if' cw "G03" "G02"
+
+                arcStr
                     -- avoid tiny arcs
                     | (mm $ abs i) < 1 && (mm $ abs j) < 1
                         = printf "G01 X%.4f Y%.4f" (mm x) (mm y)
-                    | otherwise 
+                    | otherwise
                         = printf "%s X%.4f Y%.4f I%.4f J%.4f" cmd (mm x) (mm y) (mm i) (mm j)
-                        
-        toString' [] _ _ = []             
+
+        toString' [] _ _ = []
