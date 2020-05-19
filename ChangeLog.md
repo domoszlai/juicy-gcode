@@ -1,41 +1,45 @@
 # Revision history for juicy-gcode
 
-## 0.1.0.7  -- 2020-05-15
+## 0.1.0.8 -- 2020-05-19
 
-* Add support for the viewBox attribute
+- Fix unhandled bezier edge cases resulting NaNs in GCode
 
-## 0.1.0.6  -- 2020-05-11
+## 0.1.0.7 -- 2020-05-15
 
-* Add option to mirror Y axis
+- Add support for the viewBox attribute
 
-## 0.1.0.5.2  -- 2020-04-11
+## 0.1.0.6 -- 2020-05-11
 
-* Update dependencies
+- Add option to mirror Y axis
 
-## 0.1.0.5.1  -- 2018-08-08
+## 0.1.0.5.2 -- 2020-04-11
 
-* Update documentation
+- Update dependencies
 
-## 0.1.0.5  -- 2018-08-08
+## 0.1.0.5.1 -- 2018-08-08
 
-* Simplify special bezier curves to lines
+- Update documentation
 
-## 0.1.0.4  -- 2017-12-30
+## 0.1.0.5 -- 2018-08-08
 
-* Update LICENSE
+- Simplify special bezier curves to lines
 
-## 0.1.0.3  -- 2017-03-19
+## 0.1.0.4 -- 2017-12-30
 
-* Fix typo in cabal file
+- Update LICENSE
 
-## 0.1.0.2  -- 2017-03-18
+## 0.1.0.3 -- 2017-03-19
 
-* Fix generating arcs with negative I or J
+- Fix typo in cabal file
 
-## 0.1.0.1  -- 2016-10-31
+## 0.1.0.2 -- 2017-03-18
 
-* Minor changes to the package description and README.
+- Fix generating arcs with negative I or J
 
-## 0.1.0.0  -- 2016-10-30
+## 0.1.0.1 -- 2016-10-31
 
-* First version. Mostly feature complete, but not well tested.
+- Minor changes to the package description and README.
+
+## 0.1.0.0 -- 2016-10-30
+
+- First version. Mostly feature complete, but not well tested.
