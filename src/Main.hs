@@ -9,14 +9,15 @@ import Options.Applicative
 
 import Render
 import GCode
-                                                 
-data Options = Options { _svgfile     :: String
-                       , _cfgfile     :: Maybe String
-                       , _outfile     :: Maybe String
-                       , _dpi         :: Int
-                       , _mirrorYAxis :: Bool
-                       }                
-                
+
+data Options = Options { _svgfile        :: String
+                       , _cfgfile        :: Maybe String
+                       , _outfile        :: Maybe String
+                       , _dpi            :: Int
+                       , _mirrorYAxis    :: Bool
+                       , _generateBezier :: Bool
+                       }
+
 options :: Parser Options
 options = Options
   <$> argument str
@@ -24,39 +25,43 @@ options = Options
      <> help "The SVG file to be converted" )
   <*> (optional $ strOption
       ( long "flavor"
-     <> short 'f' 
-     <> metavar "CONFIGFILE"     
+     <> short 'f'
+     <> metavar "CONFIGFILE"
      <> help "Configuration of G-Code flavor" ))
   <*> (optional $ strOption
       ( long "output"
      <> short 'o'
-     <> metavar "OUTPUTFILE"     
+     <> metavar "OUTPUTFILE"
      <> help "The output G-Code file (default is standard output)" ))
   <*> (option auto
       ( long "dpi"
      <> value 72
      <> short 'd'
-     <> metavar "DPI"     
+     <> metavar "DPI"
      <> help "Density of the SVG file (default is 72 DPI)" ))
   <*> (switch
       ( long "mirror-y-axis"
      <> short 'm'
      <> help "Mirror Y axis" ))
+  <*> (switch
+      ( long "generate-bezier"
+      <> short 'b'
+      <> help "Generate bezier curves (G5) instead of arcs (G2,G3)" ))
 
 runWithOptions :: Options -> IO ()
-runWithOptions (Options svgFile mbCfg mbOut dpi mirrorYAxis) =
-    do 
+runWithOptions (Options svgFile mbCfg mbOut dpi mirrorYAxis generateBezier) =
+    do
         mbDoc <- SVG.loadSvgFile svgFile
         flavor <- maybe (return defaultFlavor) readFlavor mbCfg
         case mbDoc of
-            (Just doc) -> writer (toString flavor dpi $ renderDoc mirrorYAxis dpi doc)
+            (Just doc) -> writer (toString flavor dpi $ renderDoc mirrorYAxis generateBezier dpi doc)
             Nothing    -> putStrLn "juicy-gcode: error during opening the SVG file"
     where
         writer = maybe putStrLn (\fn -> writeFile fn) mbOut
-    
-toLines :: Text -> String    
-toLines t = unpack $ replace (pack ";") (pack "\n") t    
-    
+
+toLines :: Text -> String
+toLines t = unpack $ replace (pack ";") (pack "\n") t
+
 readFlavor :: FilePath -> IO GCodeFlavor
 readFlavor cfgFile = do
   cfg          <- C.load [C.Required cfgFile]
@@ -65,12 +70,11 @@ readFlavor cfgFile = do
   toolon       <- C.require cfg (pack "gcode.toolon")
   tooloff      <- C.require cfg (pack "gcode.tooloff")
   return $ GCodeFlavor (toLines begin) (toLines end) (toLines toolon) (toLines tooloff)
-  
+
 main :: IO ()
 main = execParser opts >>= runWithOptions
   where
     opts = info (helper <*> options)
       ( fullDesc
-     <> progDesc "Convert SVGFILE to G-Code" 
-     <> header "juicy-gcode - The SVG to G-Code converter" )                
-     
+     <> progDesc "Convert SVGFILE to G-Code"
+     <> header "juicy-gcode - The SVG to G-Code converter" )

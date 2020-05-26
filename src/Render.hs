@@ -73,10 +73,9 @@ docTransform mirrorYAxis dpi doc = multiply mirrorTransform (viewBoxTransform $ 
 
         (w, h) = (documentSize dpi doc)
 
-renderDoc :: Bool -> Int -> SVG.Document -> [GCodeOp]
-renderDoc mirrorYAxis dpi doc = stage2 $ renderTrees
-                                            (docTransform mirrorYAxis dpi doc)
-                                            (SVG._elements doc)
+renderDoc :: Bool -> Bool -> Int -> SVG.Document -> [GCodeOp]
+renderDoc mirrorYAxis generateBezier dpi doc
+    = stage2 $ renderTrees (docTransform mirrorYAxis dpi doc) (SVG._elements doc)
     where
         -- TODO: make it tail recursive
         stage2 :: [DrawOp] -> [GCodeOp]
@@ -85,7 +84,9 @@ renderDoc mirrorYAxis dpi doc = stage2 $ renderTrees
                 convert [] _ = []
                 convert (DMoveTo p:ds) _ = GMoveTo p : convert ds (fromPoint p)
                 convert (DLineTo p:ds) _ = GLineTo p : convert ds (fromPoint p)
-                convert (DBezierTo c1 c2 p2:ds) cp = concatMap biarc2garc biarcs ++ convert ds (fromPoint p2)
+                convert (DBezierTo c1 c2 p2:ds) cp
+                    | generateBezier = [GBezierTo c1 c2 p2] ++ convert ds (fromPoint p2)
+                    | otherwise      = concatMap biarc2garc biarcs ++ convert ds (fromPoint p2)
                     where
                         biarcs = bezier2biarc (B.CubicBezier cp (fromPoint c1) (fromPoint c2) (fromPoint p2)) 5 1
                         biarc2garc biarc = [arc2garc (BA._a1 biarc), arc2garc (BA._a2 biarc)]
