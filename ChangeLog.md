@@ -1,5 +1,9 @@
 # Revision history for juicy-gcode
 
+## 0.1.0.9 -- 2020-05-27
+
+- Add option to generate bezier curves instead of arcs
+
 ## 0.1.0.8 -- 2020-05-19
 
 - Fix unhandled bezier edge cases resulting NaNs in GCode

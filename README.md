@@ -15,11 +15,11 @@ that results in much better curve fit.
 The easiest way is to download one of the pre-built binaries from the [releases page](https://github.com/domoszlai/juicy-gcode/releases).
 Alternatively, you can build from source code as follows:
 
-* Install [Stack](https://docs.haskellstack.org/en/stable/install_and_upgrade/) if you do not have it yet
-* `$ git clone https://github.com/domoszlai/juicy-gcode.git`
-* `$ stack build`
-* `$ stack install`
-* `$ juicy-gcode --help`
+- Install [Stack](https://docs.haskellstack.org/en/stable/install_and_upgrade/) if you do not have it yet
+- `$ git clone https://github.com/domoszlai/juicy-gcode.git`
+- `$ stack build`
+- `$ stack install`
+- `$ juicy-gcode --help`
 
 ```
 juicy-gcode - The SVG to G-Code converter
@@ -34,7 +34,8 @@ Available options:
   -f,--flavor CONFIGFILE   Configuration of G-Code flavor
   -o,--output OUTPUTFILE   The output G-Code file (default is standard output)
   -d,--dpi DPI             Density of the SVG file (default is 72 DPI)
-  -m,--mirror-y-axis       Mirror Y axis
+  -m,--mirror-y-axis       Mirror Y axis to have the result in G-Code coordinate system
+  -b,--generate-bezier     Generate bezier curves (G5) instead of arcs (G2,G3)
 ```
 
 ## Configuration
@@ -58,10 +59,11 @@ Another configurable property is the resolution of the SVG image in DPI (dot per
 ## Limitations
 
 Missing features:
-* text (easy with e.g. [FontyFruity](https://hackage.haskell.org/package/FontyFruity), maybe once, you can convert text to curves easily anyway)
-* filling (moderately difficult)
-* clipping (probably not easy, maybe once)
-* images (not planned)
+
+- text (easy with e.g. [FontyFruity](https://hackage.haskell.org/package/FontyFruity), maybe once, you can convert text to curves easily anyway)
+- filling (moderately difficult)
+- clipping (probably not easy, maybe once)
+- images (not planned)
 
 ## Testing and bugs
 
@@ -72,16 +74,16 @@ Please file an issue if you run into a problem (or drop me an email to dlacko @ 
 
 SVG images are built using the following shapes (all of these are subject of an arbitrary affine transformation):
 
-* lines
-* circles
-* ellipses
-* elliptic arcs with optional x axis rotation
-* quadratic and cubic bezier curves
+- lines
+- circles
+- ellipses
+- elliptic arcs with optional x axis rotation
+- quadratic and cubic bezier curves
 
 In contrast G-Code implements only
 
-* lines
-* non-elliptical arcs
+- lines
+- non-elliptical arcs
 
 That means that only lines, circles and some arcs (non-elliptic ones without rotation) can be translated to G-Code directly. If transformations are also counted, then
 only lines can be translated to G-Code directly as circles are not invariant under affine transformations. Because of this, the converter is implemented in two stages.

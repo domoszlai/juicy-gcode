@@ -42,7 +42,7 @@ options = Options
   <*> (switch
       ( long "mirror-y-axis"
      <> short 'm'
-     <> help "Mirror Y axis" ))
+     <> help "Mirror Y axis to have the result in G-Code coordinate system" ))
   <*> (switch
       ( long "generate-bezier"
       <> short 'b'
