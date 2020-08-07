@@ -225,7 +225,7 @@ renderDoc mirrorYAxis generateBezier dpi doc
         renderTree m (SVG.LineTree l) = [DMoveTo p1, DLineTo p2]
             where
                 p1 = transformPoint tr (fromSvgPoint dpi (SVG._linePoint1 l))
-                p2 = transformPoint tr (fromSvgPoint dpi (SVG._linePoint1 l))
+                p2 = transformPoint tr (fromSvgPoint dpi (SVG._linePoint2 l))
                 tr = applyTransformations m (SVG._transform (SVG._lineDrawAttributes l))
 
         renderTree m (SVG.PolyLineTree l) = map (transformDrawOp tr) (DMoveTo p0:map DLineTo ps)
