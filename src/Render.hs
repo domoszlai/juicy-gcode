@@ -44,16 +44,9 @@ mirrorControlPoint (cx, cy) (cpx, cpy) = (cx + cx - cpx, cy + cy - cpy)
 -- convert a quadratic bezier to a cubic one
 bezierQ2C :: Point -> Point -> Point -> DrawOp
 bezierQ2C (qp0x, qp0y) (qp1x, qp1y) (qp2x, qp2y)
-    = createBezier (qp0x + 2.0 / 3.0 * (qp1x - qp0x), qp0y + 2.0 / 3.0 * (qp1y - qp0y))
-                   (qp2x + 2.0 / 3.0 * (qp1x - qp2x), qp2y + 2.0 / 3.0 * (qp1y - qp2y))
-                   (qp2x, qp2y)
-
--- create a cubic bezier dta constructor from two control and one endpoints
--- tries to simplify as well. it happens that the points actually describe a line, converting it to arcs would fail later on
-createBezier :: Point -> Point -> Point -> DrawOp
-createBezier c1 c2 e
-    | (c1 == c2) && (c2 == e) = DMoveTo e
-    | otherwise = DBezierTo c1 c2 e
+    = DBezierTo (qp0x + 2.0 / 3.0 * (qp1x - qp0x), qp0y + 2.0 / 3.0 * (qp1y - qp0y))
+                (qp2x + 2.0 / 3.0 * (qp1x - qp2x), qp2y + 2.0 / 3.0 * (qp1y - qp2y))
+                (qp2x, qp2y)
 
 toAbsolute :: (Double, Double) -> SVG.Origin -> (Double, Double) -> (Double, Double)
 toAbsolute _ SVG.OriginAbsolute p = p
@@ -73,10 +66,12 @@ docTransform mirrorYAxis dpi doc = multiply mirrorTransform (viewBoxTransform $ 
 
         (w, h) = (documentSize dpi doc)
 
-renderDoc :: Bool -> Bool -> Int -> SVG.Document -> [GCodeOp]
-renderDoc mirrorYAxis generateBezier dpi doc
+renderDoc :: Bool -> Bool -> Int -> Double -> SVG.Document -> [GCodeOp]
+renderDoc mirrorYAxis generateBezier dpi resolution doc
     = stage2 $ renderTrees (docTransform mirrorYAxis dpi doc) (SVG._elements doc)
     where
+        pxresolution = (fromIntegral dpi) / 2.45 / 10 * resolution
+
         -- TODO: make it tail recursive
         stage2 :: [DrawOp] -> [GCodeOp]
         stage2 dops = convert dops (Linear.V2 0 0)
@@ -85,11 +80,16 @@ renderDoc mirrorYAxis generateBezier dpi doc
                 convert (DMoveTo p:ds) _ = GMoveTo p : convert ds (fromPoint p)
                 convert (DLineTo p:ds) _ = GLineTo p : convert ds (fromPoint p)
                 convert (DBezierTo c1 c2 p2:ds) cp
-                    | generateBezier = [GBezierTo c1 c2 p2] ++ convert ds (fromPoint p2)
-                    | otherwise      = concatMap biarc2garc biarcs ++ convert ds (fromPoint p2)
+                    | generateBezier 
+                        = [GBezierTo c1 c2 p2] ++ convert ds (fromPoint p2)
+                    | otherwise      
+                        = concatMap biarc2garc biarcs ++ convert ds (fromPoint p2)
                     where
-                        biarcs = bezier2biarc (B.CubicBezier cp (fromPoint c1) (fromPoint c2) (fromPoint p2)) 5 1
-                        biarc2garc biarc = [arc2garc (BA._a1 biarc), arc2garc (BA._a2 biarc)]
+                        biarcs = bezier2biarc (B.CubicBezier cp (fromPoint c1) (fromPoint c2) (fromPoint p2)) pxresolution
+                        biarc2garc (Left biarc) 
+                            = [arc2garc (BA._a1 biarc), arc2garc (BA._a2 biarc)]
+                        biarc2garc (Right (Linear.V2 x y)) 
+                            = [GLineTo (x,y)]
                         arc2garc arc = GArcTo (toPoint (CA._c arc)) (toPoint (CA._p2 arc)) (CA.isClockwise arc)
 
         renderPathCommands :: Point -> Point -> Maybe Point -> [SVG.PathCommand] -> [DrawOp]
@@ -142,7 +142,7 @@ renderDoc mirrorYAxis generateBezier dpi doc
                 cont dys' = SVG.VerticalTo SVG.OriginRelative dys' : ds
 
         renderPathCommands firstp currentp _ (SVG.CurveTo origin ((c1,c2,p):ps):ds)
-            = createBezier ac1 ac2 ap : renderPathCommands firstp ap (Just ac2) (cont ps)
+            = DBezierTo ac1 ac2 ap : renderPathCommands firstp ap (Just ac2) (cont ps)
             where
                 ap = toAbsolute currentp origin (fromRPoint p)
                 ac1 = toAbsolute currentp origin (fromRPoint c1)
@@ -152,7 +152,7 @@ renderDoc mirrorYAxis generateBezier dpi doc
                 cont ps' = SVG.CurveTo origin ps' : ds
 
         renderPathCommands firstp currentp mbControlp (SVG.SmoothCurveTo origin ((c2,p):ps):ds)
-            = createBezier ac1 ac2 ap : renderPathCommands firstp ap (Just ac2) (cont ps)
+            = DBezierTo ac1 ac2 ap : renderPathCommands firstp ap (Just ac2) (cont ps)
             where
                 ap = toAbsolute currentp origin (fromRPoint p)
                 ac1 = maybe ac2 (mirrorControlPoint currentp) mbControlp

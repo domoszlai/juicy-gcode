@@ -14,6 +14,7 @@ data Options = Options { _svgfile        :: String
                        , _cfgfile        :: Maybe String
                        , _outfile        :: Maybe String
                        , _dpi            :: Int
+                       , _resolution     :: Double
                        , _mirrorYAxis    :: Bool
                        , _generateBezier :: Bool
                        }
@@ -38,7 +39,13 @@ options = Options
      <> value 72
      <> short 'd'
      <> metavar "DPI"
-     <> help "Density of the SVG file (default is 72 DPI)" ))
+     <> help "Used to determine the size of the SVG when it does not contain any units; dot per inch (default is 72)" ))
+ <*> (option auto
+      ( long "resolution"
+     <> value 0.1
+     <> short 'r'
+     <> metavar "RESOLUTION"
+     <> help "Shorter paths are replaced by line segments; mm (default is 0.1)" ))
   <*> (switch
       ( long "mirror-y-axis"
      <> short 'm'
@@ -49,12 +56,12 @@ options = Options
       <> help "Generate bezier curves (G5) instead of arcs (G2,G3)" ))
 
 runWithOptions :: Options -> IO ()
-runWithOptions (Options svgFile mbCfg mbOut dpi mirrorYAxis generateBezier) =
+runWithOptions (Options svgFile mbCfg mbOut dpi resolution mirrorYAxis generateBezier) =
     do
         mbDoc <- SVG.loadSvgFile svgFile
         flavor <- maybe (return defaultFlavor) readFlavor mbCfg
         case mbDoc of
-            (Just doc) -> writer (toString flavor dpi $ renderDoc mirrorYAxis generateBezier dpi doc)
+            (Just doc) -> writer (toString flavor dpi $ renderDoc mirrorYAxis generateBezier dpi resolution doc)
             Nothing    -> putStrLn "juicy-gcode: error during opening the SVG file"
     where
         writer = maybe putStrLn (\fn -> writeFile fn) mbOut

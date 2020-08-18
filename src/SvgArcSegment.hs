@@ -80,44 +80,4 @@ convertSvgArc (x0,y0) radiusX radiusY angle largeArcFlag sweepFlag (x,y)
                 dxe = t * (cosPhi * rx * sinTheta2 + sinPhi * ry * cosTheta2)
                 dye = t * (sinPhi * rx * sinTheta2 - cosPhi * ry * cosTheta2)
 
-{-                
--- ported from: http://www.java2s.com/Code/Java/2D-Graphics-GUI/AgeometricpathconstructedfromstraightlinesquadraticandcubicBeziercurvesandellipticalarc.htm   
--- works without angle and with circle segments only             
-convertArc :: Double -> Double -> Double -> Bool -> Bool -> Double -> Double -> Arc
-convertArc x0 y0 radius largeArcFlag sweepFlag x y = Arc (x0,y0) (x,y) (cx,cy) dir
-    where
-        x1 = (x0 - x) / 2.0
-        y1 = (y0 - y) / 2.0
-                
-        pr' = radius * radius
-        px1 = x1 * x1
-        py1 = y1 * y1
-
-        radiiCheck = px1 / pr' + py1 / pr'
-        
-        r = if' (radiiCheck > 1) (sqrt radiiCheck * abs radius) (abs radius)
-        pr = r * r
-        
-        sign = if' (largeArcFlag == sweepFlag) (-1) 1
-        sq' = ((pr * pr) - (pr * py1) - (pr * px1)) / ((pr * py1) + (pr * px1))
-        coef = sign * sqrt (max 0.0 sq')
-        cx1 = coef * y1
-        cy1 = coef * (-x1)
-        
-        sx2 = (x0 + x) / 2.0
-        sy2 = (y0 + y) / 2.0            
-        cx = sx2 + cx1
-        cy = sy2 + cy1
-        
-        ux = (x1 - cx1) / r
-        uy = (y1 - cy1) / r
-        vx = (-x1 - cx1) / r
-        vy = (-y1 - cy1) / r
-        
-        -- compute direction. True -> Clockwise
-        dir' = ux * vy - uy * vx >= 0
-        dir = if' (not sweepFlag && dir') 
-                  False 
-                  (if' (sweepFlag && not dir') True dir')
--}  
   

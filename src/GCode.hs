@@ -42,12 +42,7 @@ toString (GCodeFlavor begin end on off) dpi gops = begin ++ "\n" ++ intercalate 
 
                 cmd = if' cw "G03" "G02"
 
-                arcStr
-                    -- avoid tiny arcs
-                    | (mm $ abs i) < 1 && (mm $ abs j) < 1
-                        = printf "G01 X%.4f Y%.4f" (mm x) (mm y)
-                    | otherwise
-                        = printf "%s X%.4f Y%.4f I%.4f J%.4f" cmd (mm x) (mm y) (mm i) (mm j)
+                arcStr = printf "%s X%.4f Y%.4f I%.4f J%.4f" cmd (mm x) (mm y) (mm i) (mm j)
         toString' (GBezierTo (c1x,c1y) (c2x,c2y) p2@(p2x,p2y) : gs) (p1x,p1y) True
             = bStr : toString' gs p2 True
             where

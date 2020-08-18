@@ -6,21 +6,27 @@ import qualified BiArc as BA
 import qualified Line as L 
           
 import Data.Bool (bool)
-
 import Linear    
 import Data.Complex
 
 import Types
 
+-- Approximate a bezier curve with biarcs (Left) and line segments (Right)
 bezier2biarc :: B.CubicBezier 
              -> Double
-             -> Double
-             -> [BA.BiArc]
-bezier2biarc mbezier samplingStep tolerance
+             -> [Either BA.BiArc (V2 Double)]
+bezier2biarc mbezier resolution 
+    -- Edge case: all points on the same line -> it is a line 
+    | (L.isOnLine (L.fromPoints (B._p2 mbezier) (B._p1 mbezier)) (B._c1 mbezier)) && 
+      (L.isOnLine (L.fromPoints (B._p2 mbezier) (B._p1 mbezier)) (B._c2 mbezier)) 
+        = [Right (B._p2 mbezier)]
+    -- Edge case: p1 == c1, don't split
     | (B._p1 mbezier) == (B._c1 mbezier)
         = approxOne mbezier
+    -- Edge case: p2 == c2, don't split
     | (B._p2 mbezier) == (B._c2 mbezier)
         = approxOne mbezier
+    -- Split by the inflexion points (if any)
     | otherwise 
         = byInflection (B.realInflectionPoint i1) (B.realInflectionPoint i2)
     where
@@ -51,19 +57,30 @@ bezier2biarc mbezier samplingStep tolerance
         byInflection False False = approxOne mbezier
          
         -- TODO: make it tail recursive
-        approxOne :: B.CubicBezier -> [BA.BiArc]
+        approxOne :: B.CubicBezier -> [Either BA.BiArc (V2 Double)]
         approxOne bezier
+            -- Approximate bezier length. if smaller than resolution, do not approximate
+            | (distance (B._p1 bezier) (B._c1 bezier)) + 
+              (distance (B._c1 bezier) (B._c2 bezier)) + 
+              (distance (B._c2 bezier) (B._p2 bezier)) < resolution
+                = [Right (B._p2 bezier)]
             -- Edge case: start- and endpoints are the same
             | (B._p1 bezier) == (B._p2 bezier)
                 = splitAndRecur 0.5
             -- Edge case: control lines are parallel
-            | (L._m t1) == (L._m t2)
+            | (L._m t1) == (L._m t2) || (isNaN (L._m t1) && isNaN (L._m t2)) 
                 = splitAndRecur 0.5
             -- Approximation is not close enough yet, refine
-            | maxDistance > tolerance
+            | BA.isStable biarc && maxDistance > resolution
                 = splitAndRecur maxDistanceAt
+            -- Desired case: approximation is stable and close enough
+            | BA.isStable biarc
+                = [Left biarc]
+            -- Unstable approximation: split the bezier into half, basically switching to
+            -- linear approximation mode
             | otherwise
-                = [biarc] 
+                = splitAndRecur 0.5
+
             where
                 -- Edge case: P1==C1 or P2==C2
                 -- there is no derivative at P1 or P2, use the other control point
@@ -84,14 +101,15 @@ bezier2biarc mbezier samplingStep tolerance
                 -- Calculate the BiArc
                 biarc = BA.create (B._p1 bezier) (B._p1 bezier - c1) (B._p2 bezier) (B._p2 bezier - c2) g
                 
-                -- calculate the error
-                nrPointsToCheck = (BA.arcLength biarc) / samplingStep
-                parameterStep = 1 / nrPointsToCheck
+                -- Calculate the error
+                -- TODO: we only calculate the distance at 8 points (first and last skipped as 
+                --       they should be precise), seems a resonable approximation as for now
+                parameterStep = 1 / 10
                                 
-                (maxDistance, maxDistanceAt) = maxDistance' 0 0 0
+                (maxDistance, maxDistanceAt) = maxDistance' 0 0 parameterStep
                 
                 maxDistance' m mt t 
-                    | t <= 1
+                    | t < 1
                         = if' (d > m) (maxDistance' d t nt) (maxDistance' m mt nt)
                     | otherwise
                         = (m, mt)

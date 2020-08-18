@@ -4,8 +4,7 @@ module Types ( Point
              , if'
              ) where
 
--- type Command = String
-type Point = (Double,Double) -- A point in the plane, absolute coordinates
+type Point = (Double, Double) -- A point in the plane, absolute coordinates
 
 -- all of them are invariant under affine transformation
 data DrawOp = DMoveTo Point

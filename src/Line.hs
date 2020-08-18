@@ -4,11 +4,13 @@ module Line ( Line (..)
             , createPerpendicularAt
             , slope
             , intersection
+            , isOnLine
             ) where
           
 import Linear    
 import Control.Lens
 
+-- TODO: letting _p to be NaN is actually a really bad idea
 data Line = Line { _m :: Double
                  , _p :: V2 Double
                  } deriving Show
@@ -41,14 +43,14 @@ slope p1 p2
 nan :: Double   
 nan = 0/0   
    
--- If the solution is not unique it actually return +/-infinity
+-- If the solution is not found it actually returns +/-infinity
 intersection :: Line -> Line -> V2 Double
 intersection line1 line2 
     | isNaN (_m line1)
         = verticalIntersection line1 line2 
     | isNaN (_m line2)
-        = verticalIntersection line2 line1     
-    |otherwise
+        = verticalIntersection line2 line1  
+    | otherwise
         = V2 x y
     where
         x = (_m line1 * _p line1 ^. _x - _m line2 * _p line2 ^. _x - _p line1 ^. _y + _p line2 ^. _y) / (_m line1 - _m line2) 
@@ -61,3 +63,11 @@ verticalIntersection vline line = V2 x y
         x = _p vline ^. _x
         y = _m line * (x - _p line ^. _x) + _p line ^. _y
 
+isOnLine :: Line -> V2 Double -> Bool
+isOnLine l p2 
+    | isNaN (_m l)
+        = p1 ^. _x == p2 ^. _x
+    | otherwise 
+        = (p2 ^. _x - p1 ^. _x) * (_m l) == (p2 ^. _y - p1 ^. _y) 
+    where
+        p1 = _p l

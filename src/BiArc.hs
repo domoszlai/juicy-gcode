@@ -2,6 +2,7 @@ module BiArc ( BiArc (..)
              , create
              , pointAt
              , arcLength
+             , isStable
              ) where
       
 import qualified CircularArc as CA
@@ -20,7 +21,8 @@ create :: V2 Double -- Start point
        -> V2 Double -- Tangent vector at end point
        -> V2 Double -- Transition point (connection point of the arcs)    
        -> BiArc 
-create p1 t1 p2 t2 t = BiArc (CA.CircularArc c1 r1 startAngle1 sweepAngle1 p1 t) (CA.CircularArc c2 r2 startAngle2 sweepAngle2 t p2)
+create p1 t1 p2 t2 t 
+    = BiArc (CA.CircularArc c1 r1 startAngle1 sweepAngle1 p1 t) (CA.CircularArc c2 r2 startAngle2 sweepAngle2 t p2)
     where
         -- Calculate the orientation
         osum = (t ^. _x - p1 ^. _x) * (t ^. _y + p1 ^. _y)
@@ -78,4 +80,11 @@ pointAt arc t
 
 arcLength :: BiArc -> Double
 arcLength arc = CA.arcLength (_a1 arc) + CA.arcLength (_a2 arc)
+
+-- Heuristics for unstable biarc: the radius of at least one of the arcs 
+-- is too big or too small 
+isStable :: BiArc -> Bool
+isStable biarc
+    = not (CA._r (_a1 biarc) > 99999 || CA._r (_a1 biarc) < 0.001 ||
+           CA._r (_a2 biarc) > 99999 || CA._r (_a2 biarc) < 0.001)
         
