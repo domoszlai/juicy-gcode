@@ -24,8 +24,9 @@ Alternatively, you can build from source code as follows:
 ```
 juicy-gcode - The SVG to G-Code converter
 
-Usage: juicy-gcode.exe SVGFILE [-f|--flavor CONFIGFILE] [-o|--output OUTPUTFILE]
-                       [-d|--dpi DPI] [-m|--mirror-y-axis]
+Usage: juicy-gcode SVGFILE [-f|--flavor CONFIGFILE] [-o|--output OUTPUTFILE]
+                   [-d|--dpi DPI] [-r|--resolution RESOLUTION]
+                   [-m|--mirror-y-axis] [-b|--generate-bezier]
   Convert SVGFILE to G-Code
 
 Available options:
