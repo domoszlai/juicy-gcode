@@ -1,5 +1,10 @@
 # Revision history for juicy-gcode
 
+## 0.1.0.10 -- 2020-08-19
+
+- Improve algorithmic stability at small details
+- Fix issue with SVG Line element
+
 ## 0.1.0.9 -- 2020-05-27
 
 - Add option to generate bezier curves instead of arcs
