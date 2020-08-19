@@ -29,13 +29,17 @@ Usage: juicy-gcode.exe SVGFILE [-f|--flavor CONFIGFILE] [-o|--output OUTPUTFILE]
   Convert SVGFILE to G-Code
 
 Available options:
-  -h,--help                Show this help text
-  SVGFILE                  The SVG file to be converted
-  -f,--flavor CONFIGFILE   Configuration of G-Code flavor
-  -o,--output OUTPUTFILE   The output G-Code file (default is standard output)
-  -d,--dpi DPI             Density of the SVG file (default is 72 DPI)
-  -m,--mirror-y-axis       Mirror Y axis to have the result in G-Code coordinate system
-  -b,--generate-bezier     Generate bezier curves (G5) instead of arcs (G2,G3)
+  -h,--help                   Show this help text
+  SVGFILE                     The SVG file to be converted
+  -f,--flavor CONFIGFILE      Configuration of G-Code flavor
+  -o,--output OUTPUTFILE      The output G-Code file (default is standard output)
+  -d,--dpi DPI                Used to determine the size of the SVG when it does
+                              not contain any units; dot per inch (default is 72)
+  -r,--resolution RESOLUTION  Shorter paths are replaced by line segments; mm
+                              (default is 0.1)
+  -m,--mirror-y-axis          Mirror Y axis to have the result in G-Code coordinate
+                              system
+  -b,--generate-bezier        Generate bezier curves (G5) instead of arcs (G2,G3)
 ```
 
 ## Configuration
