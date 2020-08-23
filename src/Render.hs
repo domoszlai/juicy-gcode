@@ -52,23 +52,21 @@ toAbsolute :: (Double, Double) -> SVG.Origin -> (Double, Double) -> (Double, Dou
 toAbsolute _ SVG.OriginAbsolute p = p
 toAbsolute (cx,cy) SVG.OriginRelative (dx,dy) = (cx+dx, cy+dy)
 
-docTransform :: Bool -> Int -> SVG.Document -> TransformationMatrix
-docTransform mirrorYAxis dpi doc = multiply mirrorTransform (viewBoxTransform $ SVG._viewBox doc)
+docTransform :: Int -> SVG.Document -> TransformationMatrix
+docTransform dpi doc = multiply mirrorTransform (viewBoxTransform $ SVG._viewBox doc)
     where
         viewBoxTransform (Just (vbx,vby,vbw,vbh))
             = multiply (scaleTransform (w/vbw) (h/vbh)) (translateTransform (-vbx) (-vby))
         viewBoxTransform Nothing
             = identityTransform
 
-        mirrorTransform
-            | mirrorYAxis = mirrorYTransform w h
-            | otherwise   = identityTransform
+        mirrorTransform = mirrorYTransform w h
 
         (w, h) = (documentSize dpi doc)
 
-renderDoc :: Bool -> Bool -> Int -> Double -> SVG.Document -> [GCodeOp]
-renderDoc mirrorYAxis generateBezier dpi resolution doc
-    = stage2 $ renderTrees (docTransform mirrorYAxis dpi doc) (SVG._elements doc)
+renderDoc :: Bool -> Int -> Double -> SVG.Document -> [GCodeOp]
+renderDoc generateBezier dpi resolution doc
+    = stage2 $ renderTrees (docTransform dpi doc) (SVG._elements doc)
     where
         pxresolution = (fromIntegral dpi) / 2.45 / 10 * resolution
 
