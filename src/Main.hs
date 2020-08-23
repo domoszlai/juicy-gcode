@@ -43,7 +43,7 @@ options = Options
      <> value 96
      <> short 'd'
      <> metavar "DPI"
-     <> help "Used to determine the size of the SVG when it does not contain any units; dot per inch (default is 72)" ))
+     <> help "Used to determine the size of the SVG when it does not contain any units; dot per inch (default is 96)" ))
  <*> (option auto
       ( long "resolution"
      <> value 0.1
