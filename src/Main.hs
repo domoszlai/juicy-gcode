@@ -1,11 +1,16 @@
+{-# LANGUAGE TemplateHaskell #-}
+
 import qualified Graphics.Svg as SVG
 
-import Data.Text
+import Options.Applicative
+import Paths_juicy_gcode (version)
+import Data.Version (showVersion)
+import Development.GitRev (gitHash)
+
+import Data.Text (Text, pack, unpack, replace)
 import qualified Data.Configurator as C
 
 import Data.Monoid
-
-import Options.Applicative
 
 import Render
 import GCode
@@ -78,10 +83,15 @@ readFlavor cfgFile = do
   tooloff      <- C.require cfg (pack "gcode.tooloff")
   return $ GCodeFlavor (toLines begin) (toLines end) (toLines toolon) (toLines tooloff)
 
+versionOption :: Parser (a -> a)
+versionOption = infoOption 
+                    (concat ["juicy-gcode ", showVersion version, ", git revision ", $(gitHash)])
+                    (long "version" <> short 'v' <> help "Show version")
+
 main :: IO ()
 main = execParser opts >>= runWithOptions
   where
-    opts = info (helper <*> options)
+    opts = info (helper <*> versionOption <*> options)
       ( fullDesc
      <> progDesc "Convert SVGFILE to G-Code"
      <> header "juicy-gcode - The SVG to G-Code converter" )
