@@ -41,7 +41,7 @@ options = Options
      <> help "The output G-Code file (default is standard output)" ))
   <*> (option auto
       ( long "dpi"
-     <> value 72
+     <> value 96
      <> short 'd'
      <> metavar "DPI"
      <> help "Used to determine the size of the SVG when it does not contain any units; dot per inch (default is 72)" ))
