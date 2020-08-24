@@ -85,15 +85,17 @@ $ juicy-gcode SVGFILE -f FLAVORFILE
 
 Juicy-gcode was originally developed as a testbed for my hanging plotter project, but over the years
 it reached maturity and became a really usuable tool. My main idea for further development is to turn it
-into a tool that can drive CNCs in 2.5 dimensions (e.g. carving, engraving) with just one colored SVG file. 
+into a tool that can drive CNCs in 2.5 dimensions (e.g. carving, engraving) with just one colored SVG file.
 
 To be able to test and enjoy that software, I need a proper CNC. Please consider donating a small amount for that purpose,
 or donate an actual CNC if you have a spare one for whatever reason.
 
 **[Donate for a CNC](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=UGFZYDQSTF58L&source=https://github.com/domoszlai/juicy-gcode/)**
 
-Collected so far: 2.47&euro;
-Target: > 200&euro;
+Collected so far: 102.47&euro;
+Target: >= 209&euro;
+
+Thank you so much for all people supporting the development!
 
 ## Limitations
 
