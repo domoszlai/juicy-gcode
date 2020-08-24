@@ -1,5 +1,11 @@
 # Revision history for juicy-gcode
 
+## 0.2.0.1 -- 2020-08-24
+
+- Breaking change: change default DPI to 96 instead of 72
+- Breaking change: the option to mirror the Y axis is removed (it is always mirrored now for correct result)
+- Add --version flag
+
 ## 0.1.0.10 -- 2020-08-19
 
 - Improve algorithmic stability at small details
