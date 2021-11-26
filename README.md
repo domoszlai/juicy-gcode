@@ -92,7 +92,7 @@ or donate an actual CNC if you have a spare one for whatever reason.
 
 **[Donate for a CNC](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=UGFZYDQSTF58L&source=https://github.com/domoszlai/juicy-gcode/)**
 
-Collected so far: 102.47&euro;
+Collected so far: 229.47&euro;
 Target: >= 209&euro;
 
 Thank you so much for all people supporting the development!
