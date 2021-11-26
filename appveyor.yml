@@ -6,6 +6,7 @@ environment:
   STACK_ROOT: c:\s
 
 install:
+  - set PATH=C:\Program Files\Git\mingw64\bin;%PATH%
   - ps:  curl -sS -stack.zip -L --insecure https://get.haskellstack.org/stable/windows-x86_64.zip
   - 7z x stack.zip stack.exe
 build_script:
