@@ -8,6 +8,9 @@ do
   then
    echo "ok"
   else
-   echo "failed" 
+   echo "failed"
+   exit 1 
   fi  
 done
+
+exit 0
