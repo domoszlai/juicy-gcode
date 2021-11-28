@@ -64,7 +64,7 @@ runWithOptions (Options svgFile mbCfg mbOut dpi resolution generateBezier) =
             (Just doc) -> writer (toString flavor dpi $ renderDoc generateBezier dpi resolution doc)
             Nothing    -> putStrLn "juicy-gcode: error during opening the SVG file"
     where
-        writer = maybe putStrLn (\fn -> writeFile fn) mbOut
+        writer = maybe putStr (\fn -> writeFile fn) mbOut
 
 toLines :: Text -> String
 toLines t = unpack $ replace (pack ";") (pack "\n") t
