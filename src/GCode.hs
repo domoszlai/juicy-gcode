@@ -15,10 +15,16 @@ data GCodeFlavor = GCodeFlavor { _begin   :: String
                                }
 
 defaultFlavor :: GCodeFlavor
-defaultFlavor =  GCodeFlavor "G17\nG90\nG0 Z1\nG0 X0 Y0\n" "G0 Z1" "G01 Z0 F10.00" "G00 Z1"
+defaultFlavor =  GCodeFlavor "G17\nG90\nG0 Z1\nG0 X0 Y0" "G0 Z1" "G01 Z0 F10.00" "G00 Z1"
 
 toString :: GCodeFlavor -> Int -> [GCodeOp] -> String
-toString (GCodeFlavor begin end on off) dpi gops = begin ++ "\n" ++ intercalate "\n" (toString' gops (0,0) True) ++ "\n" ++ end
+toString (GCodeFlavor begin end on off) dpi gops 
+    = begin ++
+      "\n" ++ 
+      intercalate "\n" (toString' gops (0,0) True) ++ 
+      "\n" ++ 
+      end ++
+      "\n"
     where
         dd :: Double
         dd = fromIntegral dpi
