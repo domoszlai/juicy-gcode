@@ -5,8 +5,6 @@ image:
 
 version: '{build}'
 platform: x64
-cache:
-  - c:\s
 
 install:
   - cmd: set STACK_ROOT=c:\s
@@ -20,7 +18,7 @@ build_script:
   - sh: stack setup
   - sh: stack build
 test_script:
-  - cmd: stack.exe --no-terminal build --pedantic
+  - cmd: stack.exe --no-terminal build
   - cmd: stack.exe sdist
   - sh: stack build
   - sh: stack sdist
