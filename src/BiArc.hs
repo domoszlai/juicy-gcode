@@ -1,6 +1,5 @@
 module BiArc ( BiArc (..)
              , create
-             , pointAt
              , arcLength
              , isStable
              ) where
@@ -11,10 +10,21 @@ import qualified Line as L
 import Linear hiding (angle)   
 import Control.Lens
 
+import Geom
+
 data BiArc = BiArc { _a1 :: CA.CircularArc
                    , _a2 :: CA.CircularArc
                    } deriving Show
-    
+
+instance Curve BiArc where
+    pointAt arc t
+        | t <= s
+            = pointAt (_a1 arc) (t / s)
+        | otherwise
+            = pointAt (_a2 arc) ((t - s) / (1 - s))
+        where
+            s = CA.arcLength (_a1 arc) / (arcLength arc)
+
 create :: V2 Double -- Start point
        -> V2 Double -- Tangent vector at start point
        -> V2 Double -- End point
@@ -69,15 +79,6 @@ adjustSweepAngle True angle | angle < 0 = 2 * pi + angle
 adjustSweepAngle False angle | angle > 0 = angle - 2 * pi
 adjustSweepAngle _ angle = angle    
     
-pointAt :: BiArc -> Double -> V2 Double
-pointAt arc t
-    | t <= s
-        = CA.pointAt (_a1 arc) (t / s)
-    | otherwise
-        = CA.pointAt (_a2 arc) ((t - s) / (1 - s))
-    where
-        s = CA.arcLength (_a1 arc) / (arcLength arc)
-
 arcLength :: BiArc -> Double
 arcLength arc = CA.arcLength (_a1 arc) + CA.arcLength (_a2 arc)
 

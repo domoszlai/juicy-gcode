@@ -9,6 +9,7 @@ import Data.Bool (bool)
 import Linear    
 import Data.Complex
 
+import Geom
 import Utils
 
 -- Approximate a bezier curve with biarcs (Left) and line segments (Right)
@@ -114,7 +115,7 @@ bezier2biarc mbezier resolution
                     | otherwise
                         = (m, mt)
                     where
-                        d = distance (BA.pointAt biarc t) (B.pointAt bezier t)
+                        d = distance (pointAt biarc t) (pointAt bezier t)
                         nt = t + parameterStep
 
                 splitAndRecur t = let (b1, b2) = B.bezierSplitAt bezier t

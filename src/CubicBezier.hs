@@ -9,6 +9,8 @@ module CubicBezier ( CubicBezier (..)
 import Linear                   
 import Control.Lens
 import Data.Complex
+
+import Geom
                    
 data CubicBezier = CubicBezier { _p1 :: V2 Double
                                , _c1 :: V2 Double
@@ -16,11 +18,11 @@ data CubicBezier = CubicBezier { _p1 :: V2 Double
                                , _p2 :: V2 Double
                                } deriving Show
                                
-pointAt :: CubicBezier -> Double -> V2 Double
-pointAt bezier t =  ((1 - t) ** 3) *^ _p1 bezier + 
-                    ((1 - t) ** 2) * 3 * t *^ _c1 bezier +
-                    (t ** 2) * (1 - t) * 3 *^ _c2 bezier +
-                    (t ** 3) *^ _p2 bezier
+instance Curve CubicBezier where
+    pointAt bezier t =  ((1 - t) ** 3) *^ _p1 bezier + 
+                        ((1 - t) ** 2) * 3 * t *^ _c1 bezier +
+                        (t ** 2) * (1 - t) * 3 *^ _c2 bezier +
+                        (t ** 3) *^ _p2 bezier
                                
 bezierSplitAt :: CubicBezier -> Double -> (CubicBezier, CubicBezier)
 bezierSplitAt bezier t = (CubicBezier (_p1 bezier) p0 p01 dp, CubicBezier dp p12 p2 (_p2 bezier))
