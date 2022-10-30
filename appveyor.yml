@@ -1,17 +1,25 @@
+image:
+  - Visual Studio 2015
+  - Ubuntu
+
 version: '{build}'
 platform: x64
 cache:
   - c:\s
-environment:
-  STACK_ROOT: c:\s
 
 install:
-  - set PATH=C:\Program Files\Git\mingw64\bin;%PATH%
-  - curl -sS -o stack.zip -L --insecure https://get.haskellstack.org/stable/windows-x86_64.zip
-  - 7z x stack.zip stack.exe
+  - cmd: set STACK_ROOT=c:\s
+  - cmd: set PATH=C:\Program Files\Git\mingw64\bin;%PATH%
+  - cmd: curl -sS -o stack.zip -L --insecure https://get.haskellstack.org/stable/windows-x86_64.zip
+  - cmd: 7z x stack.zip stack.exe
+  - sh: curl -sSL https://get.haskellstack.org/ | sh
 build_script:
-  - stack.exe setup
-  - stack.exe --no-terminal build --only-dependencies
+  - cmd: stack.exe setup
+  - cmd: stack.exe --no-terminal build --only-dependencies
+  - sh: stack setup
+  - sh: stack build
 test_script:
-  - stack.exe --no-terminal build --pedantic
-  - stack.exe sdist
+  - cmd: stack.exe --no-terminal build --pedantic
+  - cmd: stack.exe sdist
+  - sh: stack build
+  - sh: stack sdist
