@@ -3,7 +3,6 @@ module CubicBezier ( CubicBezier (..)
                    , bezierSplitAt
                    , isClockwise
                    , inflectionPoints
-                   , realInflectionPoint
                    ) where
 
 import Linear                   
@@ -42,8 +41,10 @@ isClockwise bezier = s < 0
           + (_p2 bezier ^. _x - _c2 bezier  ^. _x) * (_p2 bezier ^. _y + _c2 bezier ^. _y)
           + (_p1 bezier ^. _x - _p2 bezier  ^. _x) * (_p1 bezier ^. _y + _p2 bezier ^. _y)
     
-inflectionPoints :: CubicBezier -> (Complex Double, Complex Double)
-inflectionPoints bezier = (t1, t2)
+inflectionPoints :: CubicBezier -> [Double]
+inflectionPoints bezier
+    | a /= 0 = realInflectionPoints [t1, t2]
+    | otherwise = realInflectionPoints [t]
     where
         pa = _c1 bezier - _p1 bezier
         pb = _c2 bezier - _c1 bezier - pa
@@ -53,8 +54,15 @@ inflectionPoints bezier = (t1, t2)
         b = (pa ^. _x * pc ^. _y - pa ^. _y * pc ^. _x) :+ 0
         c = (pa ^. _x * pb ^. _y - pa ^. _y * pb ^. _x) :+ 0
         
+        -- linear case
+        t = -c / b
+
+        -- quadratic case
         t1 = (-b + sqrt (b * b  - 4 * a * c)) / (2 * a)
         t2 = (-b - sqrt (b * b  - 4 * a * c)) / (2 * a)
-    
-realInflectionPoint :: Complex Double -> Bool
-realInflectionPoint c = imagPart c == 0 && realPart c > 0 && realPart c < 1
+
+realInflectionPoints :: [Complex Double] -> [Double]
+realInflectionPoints = map realPart . filter isInflectionPoint
+
+isInflectionPoint :: Complex Double -> Bool
+isInflectionPoint c = imagPart c == 0 && realPart c > 0 && realPart c < 1
