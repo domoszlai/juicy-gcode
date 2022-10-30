@@ -61,9 +61,7 @@ bezier2biarc mbezier resolution
         approxOne :: B.CubicBezier -> [Either BA.BiArc (V2 Double)]
         approxOne bezier
             -- Approximate bezier length. if smaller than resolution, do not approximate
-            | (distance (B._p1 bezier) (B._c1 bezier)) + 
-              (distance (B._c1 bezier) (B._c2 bezier)) + 
-              (distance (B._c2 bezier) (B._p2 bezier)) < resolution
+            | B.maxArcLength bezier < resolution
                 = [Right (B._p2 bezier)]
             -- Edge case: start- and endpoints are the same
             | (B._p1 bezier) == (B._p2 bezier)

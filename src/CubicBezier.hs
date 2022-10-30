@@ -4,6 +4,7 @@ module CubicBezier ( CubicBezier (..)
                    , isClockwise
                    , inflectionPoints
                    , realInflectionPoint
+                   , maxArcLength
                    ) where
 
 import Linear                   
@@ -60,3 +61,9 @@ inflectionPoints bezier = (t1, t2)
     
 realInflectionPoint :: Complex Double -> Bool
 realInflectionPoint c = imagPart c == 0 && realPart c > 0 && realPart c < 1
+
+maxArcLength :: CubicBezier -> Double
+maxArcLength bezier = 
+    (distance (_p1 bezier) (_c1 bezier)) + 
+    (distance (_c1 bezier) (_c2 bezier)) + 
+    (distance (_c2 bezier) (_p2 bezier))
