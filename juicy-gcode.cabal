@@ -19,7 +19,20 @@ executable juicy-gcode
   hs-source-dirs:           src
   main-is:                  Main.hs
 
-  other-modules:            Approx BiArc CircularArc CubicBezier GCode Line Render SvgArcSegment Transformation Geom Utils SVGExt Paths_juicy_gcode
+  other-modules:            Approx 
+                            BiArc 
+                            CircularArc 
+                            CubicBezier 
+                            GCode 
+                            Line 
+                            LineSegment
+                            Render 
+                            SvgArcSegment 
+                            Transformation 
+                            Geom 
+                            Utils 
+                            SVGExt 
+                            Paths_juicy_gcode
 
   build-depends:
     base                    >=4.8    && <5,
