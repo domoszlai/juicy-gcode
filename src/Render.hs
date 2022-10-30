@@ -1,11 +1,13 @@
-module Render ( renderDoc
+module Render ( renderDoc,
+                Interpolation(..)
               ) where
 
 import qualified Graphics.Svg as SVG
 import qualified Graphics.Svg.CssTypes as CSS
 import qualified Linear
 
-import Types
+import Geom
+import GCode
 import Transformation
 import SvgArcSegment
 import Approx
@@ -14,6 +16,8 @@ import SVGExt
 import qualified CircularArc as CA
 import qualified BiArc as BA
 import qualified CubicBezier as B
+
+data Interpolation = BiArc | Linear | CubicBezier
 
 mapTuple :: (a -> b) -> (a, a) -> (b, b)
 mapTuple f (a1, a2) = (f a1, f a2)
@@ -64,8 +68,8 @@ docTransform dpi doc = multiply mirrorTransform (viewBoxTransform $ SVG._viewBox
 
         (w, h) = (documentSize dpi doc)
 
-renderDoc :: Bool -> Int -> Double -> SVG.Document -> [GCodeOp]
-renderDoc generateBezier dpi resolution doc
+renderDoc :: Interpolation -> Int -> Double -> SVG.Document -> [GCodeOp]
+renderDoc interpolation dpi resolution doc
     = stage2 $ renderTrees (docTransform dpi doc) (SVG._elements doc)
     where
         pxresolution = (fromIntegral dpi) / 2.45 / 10 * resolution
@@ -77,11 +81,10 @@ renderDoc generateBezier dpi resolution doc
                 convert [] _ = []
                 convert (DMoveTo p:ds) _ = GMoveTo p : convert ds (fromPoint p)
                 convert (DLineTo p:ds) _ = GLineTo p : convert ds (fromPoint p)
-                convert (DBezierTo c1 c2 p2:ds) cp
-                    | generateBezier 
-                        = [GBezierTo c1 c2 p2] ++ convert ds (fromPoint p2)
-                    | otherwise      
-                        = concatMap biarc2garc biarcs ++ convert ds (fromPoint p2)
+                convert (DBezierTo c1 c2 p2:ds) cp =
+                    case interpolation of
+                        CubicBezier -> [GBezierTo c1 c2 p2] ++ convert ds (fromPoint p2)
+                        _ -> concatMap biarc2garc biarcs ++ convert ds (fromPoint p2)
                     where
                         biarcs = bezier2biarc (B.CubicBezier cp (fromPoint c1) (fromPoint c2) (fromPoint p2)) pxresolution
                         biarc2garc (Left biarc) 

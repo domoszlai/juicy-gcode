@@ -9,7 +9,7 @@ import Data.Bool (bool)
 import Linear    
 import Data.Complex
 
-import Types
+import Utils
 
 -- Approximate a bezier curve with biarcs (Left) and line segments (Right)
 bezier2biarc :: B.CubicBezier 
@@ -109,7 +109,7 @@ bezier2biarc mbezier resolution
                 (maxDistance, maxDistanceAt) = maxDistance' 0 0 parameterStep
                 
                 maxDistance' m mt t 
-                    | t < 1
+                    | t < 1 
                         = if' (d > m) (maxDistance' d t nt) (maxDistance' m mt nt)
                     | otherwise
                         = (m, mt)

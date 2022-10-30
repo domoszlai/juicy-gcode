@@ -2,7 +2,8 @@ module SvgArcSegment (
                        convertSvgArc
                      ) where
 
-import Types                     
+import Geom
+import Utils                     
                 
 radiansPerDegree :: Double     
 radiansPerDegree = pi / 180.0

@@ -1,4 +1,5 @@
-module GCode ( GCodeFlavor(..)
+module GCode ( GCodeOp(..)
+             , GCodeFlavor(..)
              , defaultFlavor
              , toString
              ) where
@@ -6,7 +7,15 @@ module GCode ( GCodeFlavor(..)
 import Data.List
 import Text.Printf
 
-import Types
+import Geom
+import Utils
+
+-- this is basically what GCode can do
+data GCodeOp = GMoveTo Point
+             | GLineTo Point                -- End point
+             | GArcTo Point Point Bool      -- Center point, end point, clockwise
+             | GBezierTo Point Point Point  -- First and second control points, end point
+               deriving Show
 
 data GCodeFlavor = GCodeFlavor { _begin   :: String
                                , _end     :: String

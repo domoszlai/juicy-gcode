@@ -11,7 +11,7 @@ module Transformation ( TransformationMatrix
 
 import qualified Graphics.Svg as SVG
 import Data.Matrix as M
-import Types
+import Geom
 
 type TransformationMatrix = Matrix Double
 
