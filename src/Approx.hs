@@ -6,8 +6,7 @@ import qualified BiArc as BA
 import qualified Line as L 
           
 import Data.Bool (bool)
-import Linear    
-import Data.Complex
+import Linear
 
 import Error
 
@@ -28,24 +27,18 @@ bezier2biarc mbezier resolution
         = approxOne mbezier
     -- Split by the inflexion points (if any)
     | otherwise 
-        = byInflection (B.realInflectionPoint i1) (B.realInflectionPoint i2)
+        = byInflection (B.inflectionPoints mbezier)
     where
-        (i1, i2) = B.inflectionPoints mbezier
-
         order a b | b < a = (b, a)
                   | otherwise = (a, b)
     
-        byInflection True False = approxOne b1 ++ approxOne b2
+        byInflection [t] = approxOne b1 ++ approxOne b2
             where
-                (b1, b2) = B.bezierSplitAt mbezier (realPart i1)
-
-        byInflection False True = approxOne b1 ++ approxOne b2
-            where
-                (b1, b2) = B.bezierSplitAt mbezier (realPart i2)
+                (b1, b2) = B.bezierSplitAt mbezier t
     
-        byInflection True True = approxOne b1 ++ approxOne b2 ++ approxOne b3
+        byInflection [t1, t2] = approxOne b1 ++ approxOne b2 ++ approxOne b3
             where
-                (it1, it2') = order (realPart i1) (realPart i2)
+                (it1, it2') = order t1 t2
                 
                 -- Make the first split and save the first new curve. The second one has to be splitted again
                 -- at the recalculated t2 (it is on a new curve)                
@@ -54,7 +47,7 @@ bezier2biarc mbezier resolution
                 (b1, toSplit) = B.bezierSplitAt mbezier it1
                 (b2, b3) = B.bezierSplitAt toSplit it2
 
-        byInflection False False = approxOne mbezier
+        byInflection _ = approxOne mbezier
          
         -- TODO: make it tail recursive
         approxOne :: B.CubicBezier -> [Either BA.BiArc (V2 Double)]

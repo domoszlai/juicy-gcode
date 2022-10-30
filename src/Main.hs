@@ -9,8 +9,6 @@ import Development.GitRev (gitHash)
 
 import Data.Text (Text, pack, unpack, replace)
 import qualified Data.Configurator as C
-
-import Data.Monoid
 import Data.Maybe
 
 import Render
