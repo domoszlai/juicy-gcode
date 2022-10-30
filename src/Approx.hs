@@ -6,8 +6,7 @@ import qualified BiArc as BA
 import qualified Line as L 
           
 import Data.Bool (bool)
-import Linear    
-import Data.Complex
+import Linear
 
 import Types
 
