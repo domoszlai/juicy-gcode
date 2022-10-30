@@ -1,6 +1,7 @@
 image:
   - Visual Studio 2015
   - Ubuntu
+  - macos
 
 version: '{build}'
 platform: x64
