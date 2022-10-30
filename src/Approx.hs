@@ -9,8 +9,7 @@ import Data.Bool (bool)
 import Linear    
 import Data.Complex
 
-import Geom
-import Utils
+import Error
 
 -- Approximate a bezier curve with biarcs (Left) and line segments (Right)
 bezier2biarc :: B.CubicBezier 
@@ -99,22 +98,8 @@ bezier2biarc mbezier resolution
 
                 -- Calculate the BiArc
                 biarc = BA.create (B._p1 bezier) (B._p1 bezier - c1) (B._p2 bezier) (B._p2 bezier - c2) g
-                
-                -- Calculate the error
-                -- TODO: we only calculate the distance at 8 points (first and last skipped as 
-                --       they should be precise), seems a resonable approximation as for now
-                parameterStep = 1 / 10
                                 
-                (maxDistance, maxDistanceAt) = maxDistance' 0 0 parameterStep
-                
-                maxDistance' m mt t 
-                    | t < 1 
-                        = if' (d > m) (maxDistance' d t nt) (maxDistance' m mt nt)
-                    | otherwise
-                        = (m, mt)
-                    where
-                        d = distance (pointAt biarc t) (pointAt bezier t)
-                        nt = t + parameterStep
+                (maxDistance, maxDistanceAt) = calculateError biarc bezier
 
                 splitAndRecur t = let (b1, b2) = B.bezierSplitAt bezier t
                                    in approxOne b1 ++ approxOne b2  

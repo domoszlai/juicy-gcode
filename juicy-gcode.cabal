@@ -22,7 +22,8 @@ executable juicy-gcode
   other-modules:            Approx 
                             BiArc 
                             CircularArc 
-                            CubicBezier 
+                            CubicBezier
+                            Error
                             GCode 
                             Line 
                             LineSegment
