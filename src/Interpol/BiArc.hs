@@ -35,7 +35,7 @@ bezier2biarc mbezier resolution
     
         byInflection [t] = approxOne b1 ++ approxOne b2
             where
-                (b1, b2) = B.bezierSplitAt mbezier t
+                (b1, b2) = B.splitAt mbezier t
     
         byInflection [t1, t2] = approxOne b1 ++ approxOne b2 ++ approxOne b3
             where
@@ -45,8 +45,8 @@ bezier2biarc mbezier resolution
                 -- at the recalculated t2 (it is on a new curve)                
                 it2 = (1 - it1) * it2'        
                 
-                (b1, toSplit) = B.bezierSplitAt mbezier it1
-                (b2, b3) = B.bezierSplitAt toSplit it2
+                (b1, toSplit) = B.splitAt mbezier it1
+                (b2, b3) = B.splitAt toSplit it2
 
         byInflection _ = approxOne mbezier
          
@@ -95,6 +95,6 @@ bezier2biarc mbezier resolution
                                 
                 (maxDistance, maxDistanceAt) = calculateDistance biarc bezier
 
-                splitAndRecur t = let (b1, b2) = B.bezierSplitAt bezier t
+                splitAndRecur t = let (b1, b2) = B.splitAt bezier t
                                    in approxOne b1 ++ approxOne b2  
 

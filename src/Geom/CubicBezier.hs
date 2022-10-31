@@ -1,11 +1,12 @@
 module Geom.CubicBezier ( 
       CubicBezier (..)
-    , pointAt
-    , bezierSplitAt
+    , splitAt
     , isClockwise
     , inflectionPoints
     , maxArcLength
 ) where
+
+import Prelude hiding (splitAt)
 
 import Linear                   
 import Control.Lens
@@ -25,8 +26,8 @@ instance Curve CubicBezier where
                         (t ** 2) * (1 - t) * 3 *^ _c2 bezier +
                         (t ** 3) *^ _p2 bezier
                                
-bezierSplitAt :: CubicBezier -> Double -> (CubicBezier, CubicBezier)
-bezierSplitAt bezier t = (CubicBezier (_p1 bezier) p0 p01 dp, CubicBezier dp p12 p2 (_p2 bezier))
+splitAt :: CubicBezier -> Double -> (CubicBezier, CubicBezier)
+splitAt bezier t = (CubicBezier (_p1 bezier) p0 p01 dp, CubicBezier dp p12 p2 (_p2 bezier))
     where
         p0 = _p1 bezier + t *^ (_c1 bezier - _p1 bezier)
         p1 = _c1 bezier + t *^ (_c2 bezier - _c1 bezier)        
