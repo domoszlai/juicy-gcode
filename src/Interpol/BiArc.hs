@@ -91,7 +91,7 @@ bezier2biarc mbezier resolution
                 g = (dP2V *^ B._p1 bezier + dP1V *^ B._p2 bezier + dP1P2 *^ v) ^/ (dP2V + dP1V + dP1P2)
 
                 -- Calculate the BiArc
-                biarc = BA.create (B._p1 bezier) (B._p1 bezier - c1) (B._p2 bezier) (B._p2 bezier - c2) g
+                biarc = BA.fromPoints (B._p1 bezier) (B._p1 bezier - c1) (B._p2 bezier) (B._p2 bezier - c2) g
                                 
                 (maxDistance, maxDistanceAt) = calculateError biarc bezier
 
