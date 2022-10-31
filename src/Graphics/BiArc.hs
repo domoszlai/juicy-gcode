@@ -11,7 +11,7 @@ import qualified Graphics.Line as L
 import Linear hiding (angle)   
 import Control.Lens
 
-import Graphics
+import Graphics.Curve
 
 data BiArc = BiArc { _a1 :: CA.CircularArc
                    , _a2 :: CA.CircularArc

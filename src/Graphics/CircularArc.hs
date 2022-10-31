@@ -7,7 +7,7 @@ module Graphics.CircularArc (
 import Linear    
 import Control.Lens
 
-import Graphics
+import Graphics.Curve
 
 data CircularArc = CircularArc { _c :: V2 Double
                                , _r :: Double

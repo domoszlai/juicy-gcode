@@ -5,14 +5,14 @@ module Graphics.Transformation (
     , translateTransform
     , scaleTransform
     , transformPoint
-    , transformDrawOp
     , applyTransformations
     , multiply
   ) where
 
 import qualified Graphics.Svg as SVG
 import Data.Matrix as M
-import Graphics
+
+import Graphics.Point
 
 type TransformationMatrix = Matrix Double
 
@@ -39,11 +39,6 @@ transformPoint :: TransformationMatrix -> Point -> Point
 transformPoint m (x,y) = (a * x + c * y + e, b * x + d * y + f)
    where
      (a:c:e:b:d:f:_) = M.toList m
-
-transformDrawOp :: TransformationMatrix -> DrawOp -> DrawOp
-transformDrawOp m (DMoveTo p) = DMoveTo (transformPoint m p)
-transformDrawOp m (DLineTo p) = DLineTo (transformPoint m p)
-transformDrawOp m (DBezierTo c1 c2 p2) = DBezierTo (transformPoint m c1) (transformPoint m c2) (transformPoint m p2)
 
 applyTransformations :: TransformationMatrix -> Maybe [SVG.Transformation] -> TransformationMatrix
 applyTransformations m Nothing = m

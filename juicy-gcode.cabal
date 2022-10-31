@@ -22,16 +22,18 @@ executable juicy-gcode
   other-modules:            Graphics.BiArc
                             Graphics.CircularArc 
                             Graphics.CubicBezier
+                            Graphics.Curve
                             Graphics.Line 
                             Graphics.LineSegment
-                            Graphics.SvgArcSegment
+                            Graphics.Point
                             Graphics.Transformation 
                             Error
                             GCode 
                             Graphics 
                             Interpol.BiArc                            
                             Render   
-                            Utils 
+                            Utils
+                            SvgArcSegment 
                             SVGExt 
                             Paths_juicy_gcode
 

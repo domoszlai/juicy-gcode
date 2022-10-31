@@ -7,10 +7,11 @@ import qualified Graphics.Svg.CssTypes as CSS
 import qualified Linear
 
 import Graphics
+import Graphics.Point
 import Graphics.Transformation
-import Graphics.SvgArcSegment
 import GCode
 import Interpol.BiArc
+import SvgArcSegment
 import SVGExt
 
 import qualified Graphics.CircularArc as CA

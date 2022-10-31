@@ -4,7 +4,7 @@ module Error (
 
 import Linear
 
-import Graphics
+import Graphics.Curve
 import Utils
 
 -- Calculate the maximum distance between two curves

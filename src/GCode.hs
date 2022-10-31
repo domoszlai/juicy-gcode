@@ -7,7 +7,7 @@ module GCode ( GCodeOp(..)
 import Data.List
 import Text.Printf
 
-import Graphics
+import Graphics.Point
 import Utils
 
 -- this is basically what GCode can do

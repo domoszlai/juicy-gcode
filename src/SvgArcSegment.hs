@@ -1,8 +1,9 @@
-module Graphics.SvgArcSegment ( 
+module SvgArcSegment ( 
     convertSvgArc
 ) where
 
 import Graphics
+import Graphics.Point
 import Utils                     
                 
 radiansPerDegree :: Double     

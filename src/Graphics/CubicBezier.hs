@@ -12,7 +12,7 @@ import Linear
 import Control.Lens
 import Data.Complex
 
-import Graphics
+import Graphics.Curve
                    
 data CubicBezier = CubicBezier { _p1 :: V2 Double
                                , _c1 :: V2 Double

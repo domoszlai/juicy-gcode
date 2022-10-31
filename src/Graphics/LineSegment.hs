@@ -3,7 +3,8 @@ module Graphics.LineSegment (
 ) where
 
 import Linear
-import Graphics
+
+import Graphics.Curve
 
 data LineSegment = LineSegment { _p1 :: V2 Double
                                , _p2 :: V2 Double
