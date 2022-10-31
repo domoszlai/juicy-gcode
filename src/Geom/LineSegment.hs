@@ -1,4 +1,4 @@
-module LineSegment (fromPoints) where
+module Geom.LineSegment (fromPoints) where
 
 import Linear
 import Geom

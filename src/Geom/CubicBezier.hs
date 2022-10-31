@@ -1,10 +1,11 @@
-module CubicBezier ( CubicBezier (..)
-                   , pointAt
-                   , bezierSplitAt
-                   , isClockwise
-                   , inflectionPoints
-                   , maxArcLength
-                   ) where
+module Geom.CubicBezier ( 
+      CubicBezier (..)
+    , pointAt
+    , bezierSplitAt
+    , isClockwise
+    , inflectionPoints
+    , maxArcLength
+) where
 
 import Linear                   
 import Control.Lens

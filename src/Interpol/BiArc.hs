@@ -1,9 +1,10 @@
-module Approx ( bezier2biarc
-              ) where
+module Interpol.BiArc ( 
+    bezier2biarc
+) where
 
-import qualified CubicBezier as B
-import qualified BiArc as BA          
-import qualified Line as L 
+import qualified Geom.CubicBezier as B
+import qualified Geom.BiArc as BA          
+import qualified Geom.Line as L 
           
 import Data.Bool (bool)
 import Linear

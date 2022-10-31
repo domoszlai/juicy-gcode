@@ -1,6 +1,6 @@
-module SvgArcSegment ( 
-                       convertSvgArc
-                     ) where
+module Geom.SvgArcSegment ( 
+    convertSvgArc
+) where
 
 import Geom
 import Utils                     

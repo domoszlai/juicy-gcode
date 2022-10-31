@@ -1,7 +1,8 @@
-module CircularArc ( CircularArc (..)
-                   , isClockwise
-                   , arcLength
-                   ) where
+module Geom.CircularArc ( 
+      CircularArc (..)
+    , isClockwise
+    , arcLength
+) where
           
 import Linear    
 import Control.Lens

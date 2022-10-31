@@ -1,13 +1,14 @@
-module Transformation ( TransformationMatrix
-                      , identityTransform
-                      , mirrorYTransform
-                      , translateTransform
-                      , scaleTransform
-                      , transformPoint
-                      , transformDrawOp
-                      , applyTransformations
-                      , multiply
-                      ) where
+module Geom.Transformation ( 
+      TransformationMatrix
+    , identityTransform
+    , mirrorYTransform
+    , translateTransform
+    , scaleTransform
+    , transformPoint
+    , transformDrawOp
+    , applyTransformations
+    , multiply
+  ) where
 
 import qualified Graphics.Svg as SVG
 import Data.Matrix as M

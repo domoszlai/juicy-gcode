@@ -1,11 +1,11 @@
-module BiArc ( BiArc (..)
+module Geom.BiArc ( BiArc (..)
              , create
              , arcLength
              , isStable
              ) where
       
-import qualified CircularArc as CA
-import qualified Line as L
+import qualified Geom.CircularArc as CA
+import qualified Geom.Line as L
 
 import Linear hiding (angle)   
 import Control.Lens
