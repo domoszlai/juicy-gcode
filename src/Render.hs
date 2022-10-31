@@ -28,12 +28,6 @@ fromSvgPoint dpi (x,y) = (fromSvgNumber dpi x, fromSvgNumber dpi y)
 fromRPoint :: SVG.RPoint -> Point
 fromRPoint (Linear.V2 x y) = (x, y)
 
-toPoint :: Linear.V2 Double -> Point
-toPoint (Linear.V2 x y) = (x, y)
-
-fromPoint :: Point -> Linear.V2 Double
-fromPoint (x, y) = (Linear.V2 x y)
-
 -- TODO: em, percentage
 fromSvgNumber :: Int -> SVG.Number -> Double
 fromSvgNumber dpi num = fromNumber' (CSS.toUserUnit dpi num)

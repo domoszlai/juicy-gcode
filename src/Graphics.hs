@@ -1,5 +1,7 @@
 module Graphics ( 
       Point
+    , toPoint
+    , fromPoint
     , DrawOp(..)
     , Curve(..)
 ) where
@@ -7,6 +9,12 @@ module Graphics (
 import Linear
 
 type Point = (Double, Double) -- A point in the plane, absolute coordinates
+
+toPoint :: V2 Double -> Point
+toPoint (V2 x y) = (x, y)
+
+fromPoint :: Point -> V2 Double
+fromPoint (x, y) = (V2 x y)
 
 -- all of them are invariant under affine transformation
 data DrawOp = DMoveTo Point
