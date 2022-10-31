@@ -1,22 +1,22 @@
-module Error (calculateError) where
+module Error (calculateDistance) where
 
 import Linear
 
 import Geom
 import Utils
 
--- Calculate the error
+-- Calculate the maximum distance between two curves
 -- TODO: we only calculate the distance at 8 points (first and last skipped as 
 --       they should be precise), based on experiment seems a resonable approximation as of now
 parameterStep :: Double
 parameterStep = 1 / 10
 
-calculateError :: (Curve a, Curve b) => a -> b -> (Double, Double) 
-calculateError curve1 curve2 = maxError' 0 0 parameterStep
+calculateDistance :: (Curve a, Curve b) => a -> b -> (Double, Double) 
+calculateDistance curve1 curve2 = maxDistance' 0 0 parameterStep
     where
-        maxError' m mt t
+        maxDistance' m mt t
             | t < 1 
-                = if' (d > m) (maxError' d t nt) (maxError' m mt nt)
+                = if' (d > m) (maxDistance' d t nt) (maxDistance' m mt nt)
             | otherwise
                 = (m, mt)
             where

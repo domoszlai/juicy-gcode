@@ -93,7 +93,7 @@ bezier2biarc mbezier resolution
                 -- Calculate the BiArc
                 biarc = BA.fromPoints (B._p1 bezier) (B._p1 bezier - c1) (B._p2 bezier) (B._p2 bezier - c2) g
                                 
-                (maxDistance, maxDistanceAt) = calculateError biarc bezier
+                (maxDistance, maxDistanceAt) = calculateDistance biarc bezier
 
                 splitAndRecur t = let (b1, b2) = B.bezierSplitAt bezier t
                                    in approxOne b1 ++ approxOne b2  
