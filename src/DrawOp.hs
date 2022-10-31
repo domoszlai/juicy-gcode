@@ -1,4 +1,4 @@
-module Graphics ( 
+module DrawOp ( 
       DrawOp(..)
     , transformDrawOp
 ) where

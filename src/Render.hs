@@ -6,7 +6,7 @@ import qualified Graphics.Svg as SVG
 import qualified Graphics.Svg.CssTypes as CSS
 import qualified Linear
 
-import Graphics
+import DrawOp
 import Graphics.Point
 import Graphics.Transformation
 import GCode
