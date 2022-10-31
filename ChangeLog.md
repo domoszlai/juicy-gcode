@@ -1,5 +1,9 @@
 # Revision history for juicy-gcode
 
+## 0.2.0.2 -- 2022-10-31
+
+- Fix a problem triggered by non-quadratic inflexion point equations
+
 ## 0.2.0.1 -- 2020-08-24
 
 - Breaking change: change default DPI to 96 instead of 72
