@@ -14,11 +14,8 @@ install:
   - sh: curl -sSL https://get.haskellstack.org/ | sh
 build_script:
   - cmd: stack.exe setup
-  - cmd: stack.exe --no-terminal build --only-dependencies
+  - cmd: stack.exe --no-terminal build
+  - cmd: stack install
   - sh: stack setup
   - sh: stack build
-test_script:
-  - cmd: stack.exe --no-terminal build
-  - cmd: stack.exe sdist
-  - sh: stack build
-  - sh: stack sdist
+  - sh: stack install
