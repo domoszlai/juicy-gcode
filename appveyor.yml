@@ -16,6 +16,7 @@ build_script:
   - cmd: stack.exe setup
   - cmd: stack.exe --no-terminal build
   - cmd: stack.exe --no-terminal install
+  - cmd: appveyor PushArtifact C:\Users\appveyor\AppData\Roaming\local\bin\juicy-gcode.exe
   - sh: stack setup
   - sh: stack build
   - sh: stack install
