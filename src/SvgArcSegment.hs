@@ -2,7 +2,7 @@ module SvgArcSegment (
     convertSvgArc
 ) where
 
-import Graphics
+import DrawOp
 import Graphics.Point
 import Utils                     
                 
