@@ -19,16 +19,16 @@ executable juicy-gcode
   hs-source-dirs:           src
   main-is:                  Main.hs
 
-  other-modules:            Geom.BiArc
-                            Geom.CircularArc 
-                            Geom.CubicBezier
-                            Geom.Line 
-                            Geom.LineSegment
-                            Geom.SvgArcSegment
-                            Geom.Transformation 
+  other-modules:            Graphics.BiArc
+                            Graphics.CircularArc 
+                            Graphics.CubicBezier
+                            Graphics.Line 
+                            Graphics.LineSegment
+                            Graphics.SvgArcSegment
+                            Graphics.Transformation 
                             Error
                             GCode 
-                            Geom 
+                            Graphics 
                             Interpol.BiArc                            
                             Render   
                             Utils 
