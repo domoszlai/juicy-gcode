@@ -1,8 +1,10 @@
-module Error (calculateDistance) where
+module Error (
+    calculateDistance
+) where
 
 import Linear
 
-import Geom
+import Graphics
 import Utils
 
 -- Calculate the maximum distance between two curves

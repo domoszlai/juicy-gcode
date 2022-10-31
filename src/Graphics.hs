@@ -1,7 +1,8 @@
-module Geom ( Point
-            , DrawOp(..)
-            , Curve(..)
-            ) where
+module Graphics ( 
+      Point
+    , DrawOp(..)
+    , Curve(..)
+) where
 
 import Linear
 

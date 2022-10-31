@@ -1,7 +1,9 @@
-module Geom.LineSegment (fromPoints) where
+module Graphics.LineSegment (
+    fromPoints
+) where
 
 import Linear
-import Geom
+import Graphics
 
 data LineSegment = LineSegment { _p1 :: V2 Double
                                , _p2 :: V2 Double

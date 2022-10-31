@@ -6,16 +6,16 @@ import qualified Graphics.Svg as SVG
 import qualified Graphics.Svg.CssTypes as CSS
 import qualified Linear
 
-import Geom
-import Geom.Transformation
-import Geom.SvgArcSegment
+import Graphics
+import Graphics.Transformation
+import Graphics.SvgArcSegment
 import GCode
 import Interpol.BiArc
 import SVGExt
 
-import qualified Geom.CircularArc as CA
-import qualified Geom.BiArc as BA
-import qualified Geom.CubicBezier as B
+import qualified Graphics.CircularArc as CA
+import qualified Graphics.BiArc as BA
+import qualified Graphics.CubicBezier as B
 
 data Interpolation = BiArc | Linear | CubicBezier
 

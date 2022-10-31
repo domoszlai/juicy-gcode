@@ -2,9 +2,9 @@ module Interpol.BiArc (
     bezier2biarc
 ) where
 
-import qualified Geom.CubicBezier as B
-import qualified Geom.BiArc as BA          
-import qualified Geom.Line as L 
+import qualified Graphics.CubicBezier as B
+import qualified Graphics.BiArc as BA          
+import qualified Graphics.Line as L 
           
 import Data.Bool (bool)
 import Linear

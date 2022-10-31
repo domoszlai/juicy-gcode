@@ -1,8 +1,8 @@
-module Geom.SvgArcSegment ( 
+module Graphics.SvgArcSegment ( 
     convertSvgArc
 ) where
 
-import Geom
+import Graphics
 import Utils                     
                 
 radiansPerDegree :: Double     

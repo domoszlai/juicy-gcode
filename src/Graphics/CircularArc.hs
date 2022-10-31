@@ -1,4 +1,4 @@
-module Geom.CircularArc ( 
+module Graphics.CircularArc ( 
       CircularArc (..)
     , isClockwise
     , arcLength
@@ -7,7 +7,7 @@ module Geom.CircularArc (
 import Linear    
 import Control.Lens
 
-import Geom
+import Graphics
 
 data CircularArc = CircularArc { _c :: V2 Double
                                , _r :: Double

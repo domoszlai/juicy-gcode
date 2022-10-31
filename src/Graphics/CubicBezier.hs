@@ -1,4 +1,4 @@
-module Geom.CubicBezier ( 
+module Graphics.CubicBezier ( 
       CubicBezier (..)
     , splitAt
     , isClockwise
@@ -12,7 +12,7 @@ import Linear
 import Control.Lens
 import Data.Complex
 
-import Geom
+import Graphics
                    
 data CubicBezier = CubicBezier { _p1 :: V2 Double
                                , _c1 :: V2 Double

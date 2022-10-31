@@ -1,4 +1,4 @@
-module Geom.Transformation ( 
+module Graphics.Transformation ( 
       TransformationMatrix
     , identityTransform
     , mirrorYTransform
@@ -12,7 +12,7 @@ module Geom.Transformation (
 
 import qualified Graphics.Svg as SVG
 import Data.Matrix as M
-import Geom
+import Graphics
 
 type TransformationMatrix = Matrix Double
 

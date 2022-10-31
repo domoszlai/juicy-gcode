@@ -1,4 +1,4 @@
-module Geom.Line ( 
+module Graphics.Line ( 
       Line (..)
     , throughPoint
     , fromPoints

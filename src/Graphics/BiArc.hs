@@ -1,16 +1,17 @@
-module Geom.BiArc ( BiArc (..)
-             , fromPoints
-             , arcLength
-             , isStable
-             ) where
+module Graphics.BiArc ( 
+      BiArc (..)
+    , fromPoints
+    , arcLength
+    , isStable
+) where
       
-import qualified Geom.CircularArc as CA
-import qualified Geom.Line as L
+import qualified Graphics.CircularArc as CA
+import qualified Graphics.Line as L
 
 import Linear hiding (angle)   
 import Control.Lens
 
-import Geom
+import Graphics
 
 data BiArc = BiArc { _a1 :: CA.CircularArc
                    , _a2 :: CA.CircularArc
