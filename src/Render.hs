@@ -1,6 +1,6 @@
-module Render ( 
-    renderDoc
-) where
+module Render ( renderDoc,
+                Interpolation(..)
+              ) where
 
 import qualified Graphics.Svg as SVG
 import qualified Graphics.Svg.CssTypes as CSS
@@ -16,6 +16,8 @@ import SVGExt
 import qualified Graphics.CircularArc as CA
 import qualified Graphics.BiArc as BA
 import qualified Graphics.CubicBezier as B
+
+data Interpolation = BiArc | Linear | CubicBezier
 
 mapTuple :: (a -> b) -> (a, a) -> (b, b)
 mapTuple f (a1, a2) = (f a1, f a2)
@@ -60,8 +62,8 @@ docTransform dpi doc = multiply mirrorTransform (viewBoxTransform $ SVG._viewBox
 
         (w, h) = (documentSize dpi doc)
 
-renderDoc :: Bool -> Int -> Double -> SVG.Document -> [Path]
-renderDoc generateBezier dpi resolution doc
+renderDoc :: Interpolation -> Int -> Double -> SVG.Document -> [Path]
+renderDoc interpolation dpi resolution doc
     = stage2 $ renderTrees (docTransform dpi doc) (SVG._elements doc)
     where
         pxresolution = (fromIntegral dpi) / 2.45 / 10 * resolution
@@ -73,12 +75,11 @@ renderDoc generateBezier dpi resolution doc
                 interpolate [] _ = []
                 interpolate (MoveTo p:ds) _ = MoveTo p : interpolate ds (fromPoint p)
                 interpolate (LineTo p:ds) _ = LineTo p : interpolate ds (fromPoint p)
-                interpolate (ArcTo p1 p2 d:ds) _ = ArcTo p1 p2 d : interpolate ds (fromPoint p2)
-                interpolate (BezierTo c1 c2 p2:ds) cp
-                    | generateBezier
-                        = [BezierTo c1 c2 p2] ++ interpolate ds (fromPoint p2)
-                    | otherwise 
-                        = concatMap biarc2garc 
+                interpolate (ArcTo p1 p2 d:ds) _ = ArcTo p1 p2 d : convert ds (fromPoint p2)
+                interpolate (BezierTo c1 c2 p2:ds) cp =
+                    case interpolation of
+                        CubicBezier -> [BezierTo c1 c2 p2] ++ interpolate ds (fromPoint p2)
+                        _ -> concatMap biarc2garc 
                                     (bezier2biarcs (B.CubicBezier cp (fromPoint c1) (fromPoint c2) (fromPoint p2)) pxresolution)
                                 ++ interpolate ds (fromPoint p2)
                     where

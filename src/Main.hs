@@ -9,6 +9,7 @@ import Development.GitRev (gitHash)
 
 import Data.Text (Text, pack, unpack, replace)
 import qualified Data.Configurator as C
+import Data.Maybe
 
 import Render
 import GCode
@@ -18,7 +19,7 @@ data Options = Options { _svgfile        :: String
                        , _outfile        :: Maybe String
                        , _dpi            :: Int
                        , _resolution     :: Double
-                       , _generateBezier :: Bool
+                       , _interpolation  :: Maybe Interpolation
                        }
 
 options :: Parser Options
@@ -48,18 +49,26 @@ options = Options
      <> short 'r'
      <> metavar "RESOLUTION"
      <> help "Shorter paths are replaced by line segments; mm (default is 0.1)" ))
-  <*> (switch
-      ( long "generate-bezier"
-      <> short 'b'
-      <> help "Generate bezier curves (G5) instead of arcs (G2,G3)" ))
+  <*> (optional $ (option parseInterpolation
+      ( long "interpolation"
+      <> short 'i'
+      <> metavar "TYPE"
+      <> help "Configuration of G-Code flavor" )))
+
+parseInterpolation :: ReadM Interpolation
+parseInterpolation = str >>= \s -> case s of
+      "biarc"        -> return BiArc
+      "linear"       -> return Linear
+      "cubic-bezier" -> return CubicBezier
+      _ -> readerError "Accepted interpolation types are 'biarc', 'linear', and 'cubic-bezier'."
 
 runWithOptions :: Options -> IO ()
-runWithOptions (Options svgFile mbCfg mbOut dpi resolution generateBezier) =
+runWithOptions (Options svgFile mbCfg mbOut dpi resolution mbInterpolation) =
     do
         mbDoc <- SVG.loadSvgFile svgFile
         flavor <- maybe (return defaultFlavor) readFlavor mbCfg
         case mbDoc of
-            (Just doc) -> writer (toString flavor dpi $ renderDoc generateBezier dpi resolution doc)
+            (Just doc) -> writer (toString flavor dpi $ renderDoc (fromMaybe BiArc mbInterpolation) dpi resolution doc)
             Nothing    -> putStrLn "juicy-gcode: error during opening the SVG file"
     where
         writer = maybe putStr (\fn -> writeFile fn) mbOut
