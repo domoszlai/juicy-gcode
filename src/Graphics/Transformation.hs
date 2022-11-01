@@ -1,17 +1,20 @@
-module Transformation ( TransformationMatrix
-                      , identityTransform
-                      , mirrorYTransform
-                      , translateTransform
-                      , scaleTransform
-                      , transformPoint
-                      , transformDrawOp
-                      , applyTransformations
-                      , multiply
-                      ) where
+module Graphics.Transformation ( 
+      TransformationMatrix
+    , identityTransform
+    , mirrorYTransform
+    , translateTransform
+    , scaleTransform
+    , transformPoint
+    , transformPath
+    , applyTransformations
+    , multiply
+  ) where
 
 import qualified Graphics.Svg as SVG
 import Data.Matrix as M
-import Types
+
+import Graphics.Point
+import Graphics.Path
 
 type TransformationMatrix = Matrix Double
 
@@ -39,10 +42,11 @@ transformPoint m (x,y) = (a * x + c * y + e, b * x + d * y + f)
    where
      (a:c:e:b:d:f:_) = M.toList m
 
-transformDrawOp :: TransformationMatrix -> DrawOp -> DrawOp
-transformDrawOp m (DMoveTo p) = DMoveTo (transformPoint m p)
-transformDrawOp m (DLineTo p) = DLineTo (transformPoint m p)
-transformDrawOp m (DBezierTo c1 c2 p2) = DBezierTo (transformPoint m c1) (transformPoint m c2) (transformPoint m p2)
+transformPath :: TransformationMatrix -> Path -> Path
+transformPath m (MoveTo p) = MoveTo (transformPoint m p)
+transformPath m (LineTo p) = LineTo (transformPoint m p)
+transformPath m (ArcTo p1 p2 d) = ArcTo (transformPoint m p1) (transformPoint m p2) d
+transformPath m (BezierTo c1 c2 p2) = BezierTo (transformPoint m c1) (transformPoint m c2) (transformPoint m p2)
 
 applyTransformations :: TransformationMatrix -> Maybe [SVG.Transformation] -> TransformationMatrix
 applyTransformations m Nothing = m

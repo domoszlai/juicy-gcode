@@ -1,20 +1,21 @@
-module Approx ( bezier2biarc
-              ) where
+module Interpol.BiArc ( 
+    bezier2biarcs
+) where
 
-import qualified CubicBezier as B
-import qualified BiArc as BA          
-import qualified Line as L 
+import qualified Graphics.CubicBezier as B
+import qualified Graphics.BiArc as BA          
+import qualified Graphics.Line as L 
           
 import Data.Bool (bool)
 import Linear
 
-import Types
+import Error
 
 -- Approximate a bezier curve with biarcs (Left) and line segments (Right)
-bezier2biarc :: B.CubicBezier 
-             -> Double
-             -> [Either BA.BiArc (V2 Double)]
-bezier2biarc mbezier resolution 
+bezier2biarcs :: B.CubicBezier 
+              -> Double
+              -> [Either BA.BiArc (V2 Double)]
+bezier2biarcs mbezier resolution 
     -- Edge case: all points on the same line -> it is a line 
     | (L.isOnLine (L.fromPoints (B._p2 mbezier) (B._p1 mbezier)) (B._c1 mbezier)) && 
       (L.isOnLine (L.fromPoints (B._p2 mbezier) (B._p1 mbezier)) (B._c2 mbezier)) 
@@ -34,7 +35,7 @@ bezier2biarc mbezier resolution
     
         byInflection [t] = approxOne b1 ++ approxOne b2
             where
-                (b1, b2) = B.bezierSplitAt mbezier t
+                (b1, b2) = B.splitAt mbezier t
     
         byInflection [t1, t2] = approxOne b1 ++ approxOne b2 ++ approxOne b3
             where
@@ -44,18 +45,16 @@ bezier2biarc mbezier resolution
                 -- at the recalculated t2 (it is on a new curve)                
                 it2 = (1 - it1) * it2'        
                 
-                (b1, toSplit) = B.bezierSplitAt mbezier it1
-                (b2, b3) = B.bezierSplitAt toSplit it2
+                (b1, toSplit) = B.splitAt mbezier it1
+                (b2, b3) = B.splitAt toSplit it2
 
         byInflection _ = approxOne mbezier
          
         -- TODO: make it tail recursive
         approxOne :: B.CubicBezier -> [Either BA.BiArc (V2 Double)]
         approxOne bezier
-            -- Approximate bezier length. if smaller than resolution, do not approximate
-            | (distance (B._p1 bezier) (B._c1 bezier)) + 
-              (distance (B._c1 bezier) (B._c2 bezier)) + 
-              (distance (B._c2 bezier) (B._p2 bezier)) < resolution
+            -- Approximate bezier length. if max length is smaller than resolution, do not approximate
+            | B.maxArcLength bezier < resolution
                 = [Right (B._p2 bezier)]
             -- Edge case: start- and endpoints are the same
             | (B._p1 bezier) == (B._p2 bezier)
@@ -72,7 +71,7 @@ bezier2biarc mbezier resolution
             -- Unstable approximation: split the bezier into half, basically switching to
             -- linear approximation mode
             | otherwise
-                = splitAndRecur 0.5
+                = splitAndRecur 0.5 -- TODO: use linear if not stable
 
             where
                 -- Edge case: P1==C1 or P2==C2
@@ -92,24 +91,9 @@ bezier2biarc mbezier resolution
                 g = (dP2V *^ B._p1 bezier + dP1V *^ B._p2 bezier + dP1P2 *^ v) ^/ (dP2V + dP1V + dP1P2)
 
                 -- Calculate the BiArc
-                biarc = BA.create (B._p1 bezier) (B._p1 bezier - c1) (B._p2 bezier) (B._p2 bezier - c2) g
-                
-                -- Calculate the error
-                -- TODO: we only calculate the distance at 8 points (first and last skipped as 
-                --       they should be precise), seems a resonable approximation as for now
-                parameterStep = 1 / 10
+                biarc = BA.fromPoints (B._p1 bezier) (B._p1 bezier - c1) (B._p2 bezier) (B._p2 bezier - c2) g
                                 
-                (maxDistance, maxDistanceAt) = maxDistance' 0 0 parameterStep
-                
-                maxDistance' m mt t 
-                    | t < 1
-                        = if' (d > m) (maxDistance' d t nt) (maxDistance' m mt nt)
-                    | otherwise
-                        = (m, mt)
-                    where
-                        d = distance (BA.pointAt biarc t) (B.pointAt bezier t)
-                        nt = t + parameterStep
+                (maxDistance, maxDistanceAt) = calculateDistance biarc bezier
 
-                splitAndRecur t = let (b1, b2) = B.bezierSplitAt bezier t
-                                   in approxOne b1 ++ approxOne b2  
-
+                splitAndRecur t = let (b1, b2) = B.splitAt bezier t
+                                   in approxOne b1 ++ approxOne b2 

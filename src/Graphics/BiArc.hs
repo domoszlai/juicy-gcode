@@ -1,27 +1,38 @@
-module BiArc ( BiArc (..)
-             , create
-             , pointAt
-             , arcLength
-             , isStable
-             ) where
+module Graphics.BiArc ( 
+      BiArc (..)
+    , fromPoints
+    , arcLength
+    , isStable
+) where
       
-import qualified CircularArc as CA
-import qualified Line as L
+import qualified Graphics.CircularArc as CA
+import qualified Graphics.Line as L
 
 import Linear hiding (angle)   
 import Control.Lens
 
+import Graphics.Curve
+
 data BiArc = BiArc { _a1 :: CA.CircularArc
                    , _a2 :: CA.CircularArc
                    } deriving Show
-    
-create :: V2 Double -- Start point
-       -> V2 Double -- Tangent vector at start point
-       -> V2 Double -- End point
-       -> V2 Double -- Tangent vector at end point
-       -> V2 Double -- Transition point (connection point of the arcs)    
-       -> BiArc 
-create p1 t1 p2 t2 t 
+
+instance Curve BiArc where
+    pointAt arc t
+        | t <= s
+            = pointAt (_a1 arc) (t / s)
+        | otherwise
+            = pointAt (_a2 arc) ((t - s) / (1 - s))
+        where
+            s = CA.arcLength (_a1 arc) / (arcLength arc)
+
+fromPoints :: V2 Double -- Start point
+           -> V2 Double -- Tangent vector at start point
+           -> V2 Double -- End point
+           -> V2 Double -- Tangent vector at end point
+           -> V2 Double -- Transition point (connection point of the arcs)    
+           -> BiArc 
+fromPoints p1 t1 p2 t2 t 
     = BiArc (CA.CircularArc c1 r1 startAngle1 sweepAngle1 p1 t) (CA.CircularArc c2 r2 startAngle2 sweepAngle2 t p2)
     where
         -- Calculate the orientation
@@ -69,20 +80,11 @@ adjustSweepAngle True angle | angle < 0 = 2 * pi + angle
 adjustSweepAngle False angle | angle > 0 = angle - 2 * pi
 adjustSweepAngle _ angle = angle    
     
-pointAt :: BiArc -> Double -> V2 Double
-pointAt arc t
-    | t <= s
-        = CA.pointAt (_a1 arc) (t / s)
-    | otherwise
-        = CA.pointAt (_a2 arc) ((t - s) / (1 - s))
-    where
-        s = CA.arcLength (_a1 arc) / (arcLength arc)
-
 arcLength :: BiArc -> Double
 arcLength arc = CA.arcLength (_a1 arc) + CA.arcLength (_a2 arc)
 
 -- Heuristics for unstable biarc: the radius of at least one of the arcs 
--- is too big or too small 
+-- is too big or too small. Not too scientific...
 isStable :: BiArc -> Bool
 isStable biarc
     = not (CA._r (_a1 biarc) > 99999 || CA._r (_a1 biarc) < 0.001 ||

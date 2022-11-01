@@ -1,8 +1,10 @@
 module SvgArcSegment ( 
-                       convertSvgArc
-                     ) where
+    convertSvgArc
+) where
 
-import Types                     
+import Graphics.Path
+import Graphics.Point
+import Utils                     
                 
 radiansPerDegree :: Double     
 radiansPerDegree = pi / 180.0
@@ -18,12 +20,12 @@ calculateVectorAngle ux uy vx vy
         tb = atan2 vy vx
         
 -- ported from: https://github.com/vvvv/SVG/blob/master/Source/Paths/SvgArcSegment.cs
-convertSvgArc :: Point -> Double -> Double -> Double -> Bool -> Bool -> Point -> [DrawOp]
+convertSvgArc :: Point -> Double -> Double -> Double -> Bool -> Bool -> Point -> [Path]
 convertSvgArc (x0,y0) radiusX radiusY angle largeArcFlag sweepFlag (x,y)
     | x0 == x && y0 == y
         = []
     | radiusX == 0.0 && radiusY == 0.0
-        = [DLineTo (x,y)]
+        = [LineTo (x,y)]
     | otherwise 
         = calcSegments x0 y0 theta1' segments'
     where
@@ -63,7 +65,7 @@ convertSvgArc (x0,y0) radiusX radiusY angle largeArcFlag sweepFlag (x,y)
             | segments == 0
                 = []
             | otherwise
-                = (DBezierTo (startX + dx1, startY + dy1) (endpointX + dxe, endpointY + dye) (endpointX, endpointY) : calcSegments endpointX endpointY theta2 (segments - 1))
+                = (BezierTo (startX + dx1, startY + dy1) (endpointX + dxe, endpointY + dye) (endpointX, endpointY) : calcSegments endpointX endpointY theta2 (segments - 1))
             where
                 cosTheta1 = cos theta1
                 sinTheta1 = sin theta1

@@ -1,11 +1,12 @@
-module Line ( Line (..)
-            , throughPoint
-            , fromPoints
-            , createPerpendicularAt
-            , slope
-            , intersection
-            , isOnLine
-            ) where
+module Graphics.Line ( 
+      Line (..)
+    , throughPoint
+    , fromPoints
+    , createPerpendicularAt
+    , slope
+    , intersection
+    , isOnLine
+) where
           
 import Linear    
 import Control.Lens

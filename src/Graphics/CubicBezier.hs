@@ -1,13 +1,18 @@
-module CubicBezier ( CubicBezier (..)
-                   , pointAt
-                   , bezierSplitAt
-                   , isClockwise
-                   , inflectionPoints
-                   ) where
+module Graphics.CubicBezier ( 
+      CubicBezier (..)
+    , splitAt
+    , isClockwise
+    , inflectionPoints
+    , maxArcLength
+) where
+
+import Prelude hiding (splitAt)
 
 import Linear                   
 import Control.Lens
 import Data.Complex
+
+import Graphics.Curve
                    
 data CubicBezier = CubicBezier { _p1 :: V2 Double
                                , _c1 :: V2 Double
@@ -15,14 +20,14 @@ data CubicBezier = CubicBezier { _p1 :: V2 Double
                                , _p2 :: V2 Double
                                } deriving Show
                                
-pointAt :: CubicBezier -> Double -> V2 Double
-pointAt bezier t =  ((1 - t) ** 3) *^ _p1 bezier + 
-                    ((1 - t) ** 2) * 3 * t *^ _c1 bezier +
-                    (t ** 2) * (1 - t) * 3 *^ _c2 bezier +
-                    (t ** 3) *^ _p2 bezier
+instance Curve CubicBezier where
+    pointAt bezier t =  ((1 - t) ** 3) *^ _p1 bezier + 
+                        ((1 - t) ** 2) * 3 * t *^ _c1 bezier +
+                        (t ** 2) * (1 - t) * 3 *^ _c2 bezier +
+                        (t ** 3) *^ _p2 bezier
                                
-bezierSplitAt :: CubicBezier -> Double -> (CubicBezier, CubicBezier)
-bezierSplitAt bezier t = (CubicBezier (_p1 bezier) p0 p01 dp, CubicBezier dp p12 p2 (_p2 bezier))
+splitAt :: CubicBezier -> Double -> (CubicBezier, CubicBezier)
+splitAt bezier t = (CubicBezier (_p1 bezier) p0 p01 dp, CubicBezier dp p12 p2 (_p2 bezier))
     where
         p0 = _p1 bezier + t *^ (_c1 bezier - _p1 bezier)
         p1 = _c1 bezier + t *^ (_c2 bezier - _c1 bezier)        
@@ -66,3 +71,9 @@ realInflectionPoints = map realPart . filter isInflectionPoint
 
 isInflectionPoint :: Complex Double -> Bool
 isInflectionPoint c = imagPart c == 0 && realPart c > 0 && realPart c < 1
+
+maxArcLength :: CubicBezier -> Double
+maxArcLength bezier = 
+    (distance (_p1 bezier) (_c1 bezier)) + 
+    (distance (_c1 bezier) (_c2 bezier)) + 
+    (distance (_c2 bezier) (_p2 bezier))
