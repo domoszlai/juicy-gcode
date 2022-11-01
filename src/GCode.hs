@@ -1,5 +1,4 @@
-module GCode ( GCodeOp(..)
-             , GCodeFlavor(..)
+module GCode ( GCodeFlavor(..)
              , defaultFlavor
              , toString
              ) where
@@ -7,15 +6,8 @@ module GCode ( GCodeOp(..)
 import Data.List
 import Text.Printf
 
-import Graphics.Point
+import Graphics.Path
 import Utils
-
--- this is basically what GCode can do
-data GCodeOp = GMoveTo Point
-             | GLineTo Point                -- End point
-             | GArcTo Point Point Bool      -- Center point, end point, clockwise
-             | GBezierTo Point Point Point  -- First and second control points, end point
-               deriving Show
 
 data GCodeFlavor = GCodeFlavor { _begin   :: String
                                , _end     :: String
@@ -26,7 +18,7 @@ data GCodeFlavor = GCodeFlavor { _begin   :: String
 defaultFlavor :: GCodeFlavor
 defaultFlavor =  GCodeFlavor "G17\nG90\nG0 Z1\nG0 X0 Y0" "G0 Z1" "G01 Z0 F10.00" "G00 Z1"
 
-toString :: GCodeFlavor -> Int -> [GCodeOp] -> String
+toString :: GCodeFlavor -> Int -> [Path] -> String
 toString (GCodeFlavor begin end on off) dpi gops 
     = begin ++
       "\n" ++ 
@@ -41,15 +33,15 @@ toString (GCodeFlavor begin end on off) dpi gops
         mm :: Double -> Double
         mm px = (px * 2.54 * 10) / dd
 
-        toString' (GMoveTo p@(x,y) : gs) _ False
+        toString' (MoveTo p@(x,y) : gs) _ False
             = printf "G00 X%.4f Y%.4f" (mm x) (mm y) : toString' gs p False
-        toString' (GMoveTo p@(x,y) : gs) _ True
+        toString' (MoveTo p@(x,y) : gs) _ True
             = off : printf "G00 X%.4f Y%.4f" (mm x) (mm y) : toString' gs p False
         toString' gs cp False
             = on : toString' gs cp True
-        toString' (GLineTo p@(x,y) : gs) _ True
+        toString' (LineTo p@(x,y) : gs) _ True
             = printf "G01 X%.4f Y%.4f" (mm x) (mm y) : toString' gs p True
-        toString' (GArcTo (ox,oy) p@(x,y) cw : gs) (cx,cy) True
+        toString' (ArcTo (ox,oy) p@(x,y) cw : gs) (cx,cy) True
             = arcStr : toString' gs p True
             where
                 i = ox - cx
@@ -58,7 +50,7 @@ toString (GCodeFlavor begin end on off) dpi gops
                 cmd = if' cw "G03" "G02"
 
                 arcStr = printf "%s X%.4f Y%.4f I%.4f J%.4f" cmd (mm x) (mm y) (mm i) (mm j)
-        toString' (GBezierTo (c1x,c1y) (c2x,c2y) p2@(p2x,p2y) : gs) (p1x,p1y) True
+        toString' (BezierTo (c1x,c1y) (c2x,c2y) p2@(p2x,p2y) : gs) (p1x,p1y) True
             = bStr : toString' gs p2 True
             where
                 i = c1x - p1x

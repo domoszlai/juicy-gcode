@@ -9,7 +9,6 @@ import qualified Linear
 import Graphics.Path
 import Graphics.Point
 import Graphics.Transformation
-import GCode
 import Interpol.BiArc
 import SvgArcSegment
 import SVGExt
@@ -63,23 +62,23 @@ docTransform dpi doc = multiply mirrorTransform (viewBoxTransform $ SVG._viewBox
 
         (w, h) = (documentSize dpi doc)
 
-renderDoc :: Interpolation -> Int -> Double -> SVG.Document -> [GCodeOp]
+renderDoc :: Interpolation -> Int -> Double -> SVG.Document -> [Path]
 renderDoc interpolation dpi resolution doc
     = stage2 $ renderTrees (docTransform dpi doc) (SVG._elements doc)
     where
         pxresolution = (fromIntegral dpi) / 2.45 / 10 * resolution
 
         -- TODO: make it tail recursive
-        stage2 :: [Path] -> [GCodeOp]
+        stage2 :: [Path] -> [Path]
         stage2 dops = convert dops (Linear.V2 0 0)
             where
                 convert [] _ = []
-                convert (MoveTo p:ds) _ = GMoveTo p : convert ds (fromPoint p)
-                convert (LineTo p:ds) _ = GLineTo p : convert ds (fromPoint p)
-                convert (ArcTo p1 p2 d:ds) _ = GArcTo p1 p2 d : convert ds (fromPoint p2)
+                convert (MoveTo p:ds) _ = MoveTo p : convert ds (fromPoint p)
+                convert (LineTo p:ds) _ = LineTo p : convert ds (fromPoint p)
+                convert (ArcTo p1 p2 d:ds) _ = ArcTo p1 p2 d : convert ds (fromPoint p2)
                 convert (BezierTo c1 c2 p2:ds) cp =
                     case interpolation of
-                        CubicBezier -> [GBezierTo c1 c2 p2] ++ convert ds (fromPoint p2)
+                        CubicBezier -> [BezierTo c1 c2 p2] ++ convert ds (fromPoint p2)
                         _ -> concatMap biarc2garc 
                                     (bezier2biarcs (B.CubicBezier cp (fromPoint c1) (fromPoint c2) (fromPoint p2)) pxresolution)
                                 ++ convert ds (fromPoint p2)
@@ -87,8 +86,8 @@ renderDoc interpolation dpi resolution doc
                         biarc2garc (Left biarc) 
                             = [arc2garc (BA._a1 biarc), arc2garc (BA._a2 biarc)]
                         biarc2garc (Right (Linear.V2 x y)) 
-                            = [GLineTo (x,y)]
-                        arc2garc arc = GArcTo (toPoint (CA._c arc)) (toPoint (CA._p2 arc)) (CA.isClockwise arc)
+                            = [LineTo (x,y)]
+                        arc2garc arc = ArcTo (toPoint (CA._c arc)) (toPoint (CA._p2 arc)) (CA.isClockwise arc)
 
         renderPathCommands :: Point -> Point -> Maybe Point -> [SVG.PathCommand] -> [Path]
         renderPathCommands _ currentp _ (SVG.MoveTo origin (p:ps):ds)
