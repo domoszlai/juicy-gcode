@@ -1,5 +1,5 @@
 module Interpol.BiArc ( 
-    bezier2biarc
+    bezier2biarcs
 ) where
 
 import qualified Graphics.CubicBezier as B
@@ -12,10 +12,10 @@ import Linear
 import Error
 
 -- Approximate a bezier curve with biarcs (Left) and line segments (Right)
-bezier2biarc :: B.CubicBezier 
-             -> Double
-             -> [Either BA.BiArc (V2 Double)]
-bezier2biarc mbezier resolution 
+bezier2biarcs :: B.CubicBezier 
+              -> Double
+              -> [Either BA.BiArc (V2 Double)]
+bezier2biarcs mbezier resolution 
     -- Edge case: all points on the same line -> it is a line 
     | (L.isOnLine (L.fromPoints (B._p2 mbezier) (B._p1 mbezier)) (B._c1 mbezier)) && 
       (L.isOnLine (L.fromPoints (B._p2 mbezier) (B._p1 mbezier)) (B._c2 mbezier)) 
@@ -53,7 +53,7 @@ bezier2biarc mbezier resolution
         -- TODO: make it tail recursive
         approxOne :: B.CubicBezier -> [Either BA.BiArc (V2 Double)]
         approxOne bezier
-            -- Approximate bezier length. if smaller than resolution, do not approximate
+            -- Approximate bezier length. if max length is smaller than resolution, do not approximate
             | B.maxArcLength bezier < resolution
                 = [Right (B._p2 bezier)]
             -- Edge case: start- and endpoints are the same
@@ -71,7 +71,7 @@ bezier2biarc mbezier resolution
             -- Unstable approximation: split the bezier into half, basically switching to
             -- linear approximation mode
             | otherwise
-                = splitAndRecur 0.5
+                = splitAndRecur 0.5 -- TODO: use linear if not stable
 
             where
                 -- Edge case: P1==C1 or P2==C2
