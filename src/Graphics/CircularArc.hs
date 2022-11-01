@@ -9,6 +9,9 @@ import Control.Lens
 
 import Graphics.Curve
 
+-- Would be enough one of these sets:
+-- 1. c, r, startAngle, sweepAngle
+-- 2. c, r, p1, p1, direction
 data CircularArc = CircularArc { _c :: V2 Double
                                , _r :: Double
                                , _startAngle :: Double

@@ -96,5 +96,4 @@ bezier2biarcs mbezier resolution
                 (maxDistance, maxDistanceAt) = calculateDistance biarc bezier
 
                 splitAndRecur t = let (b1, b2) = B.splitAt bezier t
-                                   in approxOne b1 ++ approxOne b2  
-
+                                   in approxOne b1 ++ approxOne b2 

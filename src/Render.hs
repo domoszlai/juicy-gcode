@@ -70,18 +70,18 @@ renderDoc interpolation dpi resolution doc
 
         -- TODO: make it tail recursive
         stage2 :: [Path] -> [Path]
-        stage2 dops = convert dops (Linear.V2 0 0)
+        stage2 dops = interpolate dops (Linear.V2 0 0)
             where
-                convert [] _ = []
-                convert (MoveTo p:ds) _ = MoveTo p : convert ds (fromPoint p)
-                convert (LineTo p:ds) _ = LineTo p : convert ds (fromPoint p)
-                convert (ArcTo p1 p2 d:ds) _ = ArcTo p1 p2 d : convert ds (fromPoint p2)
-                convert (BezierTo c1 c2 p2:ds) cp =
+                interpolate [] _ = []
+                interpolate (MoveTo p:ds) _ = MoveTo p : interpolate ds (fromPoint p)
+                interpolate (LineTo p:ds) _ = LineTo p : interpolate ds (fromPoint p)
+                interpolate (ArcTo p1 p2 d:ds) _ = ArcTo p1 p2 d : convert ds (fromPoint p2)
+                interpolate (BezierTo c1 c2 p2:ds) cp =
                     case interpolation of
-                        CubicBezier -> [BezierTo c1 c2 p2] ++ convert ds (fromPoint p2)
+                        CubicBezier -> [BezierTo c1 c2 p2] ++ interpolate ds (fromPoint p2)
                         _ -> concatMap biarc2garc 
                                     (bezier2biarcs (B.CubicBezier cp (fromPoint c1) (fromPoint c2) (fromPoint p2)) pxresolution)
-                                ++ convert ds (fromPoint p2)
+                                ++ interpolate ds (fromPoint p2)
                     where
                         biarc2garc (Left biarc) 
                             = [arc2garc (BA._a1 biarc), arc2garc (BA._a2 biarc)]
