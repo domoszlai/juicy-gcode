@@ -30,8 +30,7 @@ executable juicy-gcode
                             Graphics.Transformation 
                             Error
                             GCode  
-                            Interpol.BiArc
-                            Interpol.Linear                            
+                            Interpol.BiArc                          
                             Render   
                             Utils
                             SvgArcSegment 
