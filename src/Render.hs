@@ -75,7 +75,7 @@ renderDoc interpolation dpi resolution doc
                 interpolate [] _ = []
                 interpolate (MoveTo p:ds) _ = MoveTo p : interpolate ds (fromPoint p)
                 interpolate (LineTo p:ds) _ = LineTo p : interpolate ds (fromPoint p)
-                interpolate (ArcTo p1 p2 d:ds) _ = ArcTo p1 p2 d : convert ds (fromPoint p2)
+                interpolate (ArcTo p1 p2 d:ds) _ = ArcTo p1 p2 d : interpolate ds (fromPoint p2)
                 interpolate (BezierTo c1 c2 p2:ds) cp =
                     case interpolation of
                         CubicBezier -> [BezierTo c1 c2 p2] ++ interpolate ds (fromPoint p2)
