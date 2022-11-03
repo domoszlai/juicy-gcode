@@ -20,7 +20,7 @@ calculateVectorAngle ux uy vx vy
         tb = atan2 vy vx
         
 -- ported from: https://github.com/vvvv/SVG/blob/master/Source/Paths/SvgArcSegment.cs
-convertSvgArc :: Point -> Double -> Double -> Double -> Bool -> Bool -> Point -> [Path]
+convertSvgArc :: Point -> Double -> Double -> Double -> Bool -> Bool -> Point -> [PathCommand]
 convertSvgArc (x0,y0) radiusX radiusY angle largeArcFlag sweepFlag (x,y)
     | x0 == x && y0 == y
         = []

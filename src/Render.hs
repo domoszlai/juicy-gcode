@@ -40,7 +40,7 @@ mirrorControlPoint :: Point -> Point -> Point
 mirrorControlPoint (cx, cy) (cpx, cpy) = (cx + cx - cpx, cy + cy - cpy)
 
 -- convert a quadratic bezier to a cubic one
-bezierQ2C :: Point -> Point -> Point -> Path
+bezierQ2C :: Point -> Point -> Point -> PathCommand
 bezierQ2C (qp0x, qp0y) (qp1x, qp1y) (qp2x, qp2y)
     = BezierTo (qp0x + 2.0 / 3.0 * (qp1x - qp0x), qp0y + 2.0 / 3.0 * (qp1y - qp0y))
                (qp2x + 2.0 / 3.0 * (qp1x - qp2x), qp2y + 2.0 / 3.0 * (qp1y - qp2y))
@@ -49,6 +49,28 @@ bezierQ2C (qp0x, qp0y) (qp1x, qp1y) (qp2x, qp2y)
 toAbsolute :: (Double, Double) -> SVG.Origin -> (Double, Double) -> (Double, Double)
 toAbsolute _ SVG.OriginAbsolute p = p
 toAbsolute (cx,cy) SVG.OriginRelative (dx,dy) = (cx+dx, cy+dy)
+
+-- Apply SVG transformations to a TransformationMatrix
+applyTransformations :: TransformationMatrix -> Maybe [SVG.Transformation] -> TransformationMatrix
+applyTransformations m Nothing = m
+applyTransformations m (Just ts) = foldl applyTransformation m ts
+
+radiansPerDegree :: Double
+radiansPerDegree = pi / 180.0
+
+-- https://developer.mozilla.org/en/docs/Web/SVG/Attribute/transform
+applyTransformation :: TransformationMatrix -> SVG.Transformation -> TransformationMatrix
+applyTransformation m (SVG.TransformMatrix a b c d e f) = multiply m (fromElements [a,b,c,d,e,f])
+applyTransformation m (SVG.Translate x y) = multiply m (fromElements [1,0,0,1,x,y])
+applyTransformation m (SVG.Scale sx mbSy) = multiply m (fromElements [sx,0,0,maybe sx id mbSy,0,0])
+applyTransformation m (SVG.Rotate a Nothing)
+    = multiply m (fromElements [cos(r),sin(r),-sin(r),cos(r),0,0])
+    where
+        r = a * radiansPerDegree
+applyTransformation m (SVG.Rotate a (Just (x, y))) = applyTransformations m (Just [SVG.Translate x y , SVG.Rotate a Nothing , SVG.Translate (-x) (-y)])
+applyTransformation m (SVG.SkewX a) = multiply m (fromElements [1,0,tan(a*radiansPerDegree),1,0,0])
+applyTransformation m (SVG.SkewY a) = multiply m (fromElements [1,tan(a*radiansPerDegree),0,1,0,0])
+applyTransformation m (SVG.TransformUnknown) = m
 
 docTransform :: Int -> SVG.Document -> TransformationMatrix
 docTransform dpi doc = multiply mirrorTransform (viewBoxTransform $ SVG._viewBox doc)
@@ -62,14 +84,14 @@ docTransform dpi doc = multiply mirrorTransform (viewBoxTransform $ SVG._viewBox
 
         (w, h) = (documentSize dpi doc)
 
-renderDoc :: Interpolation -> Int -> Double -> SVG.Document -> [Path]
+renderDoc :: Interpolation -> Int -> Double -> SVG.Document -> [PathCommand]
 renderDoc interpolation dpi resolution doc
     = stage2 $ renderTrees (docTransform dpi doc) (SVG._elements doc)
     where
         pxresolution = (fromIntegral dpi) / 2.45 / 10 * resolution
 
         -- TODO: make it tail recursive
-        stage2 :: [Path] -> [Path]
+        stage2 :: [PathCommand] -> [PathCommand]
         stage2 dops = interpolate dops (Linear.V2 0 0)
             where
                 interpolate [] _ = []
@@ -89,7 +111,7 @@ renderDoc interpolation dpi resolution doc
                             = [LineTo (x,y)]
                         arc2garc arc = ArcTo (toPoint (CA._c arc)) (toPoint (CA._p2 arc)) (CA.isClockwise arc)
 
-        renderPathCommands :: Point -> Point -> Maybe Point -> [SVG.PathCommand] -> [Path]
+        renderPathCommands :: Point -> Point -> Maybe Point -> [SVG.PathCommand] -> [PathCommand]
         renderPathCommands _ currentp _ (SVG.MoveTo origin (p:ps):ds)
             = MoveTo ap : renderPathCommands ap ap Nothing (cont ps)
             where
@@ -196,17 +218,17 @@ renderDoc interpolation dpi resolution doc
 
         renderPathCommands _ _ _ _ = []
 
-        renderTree :: TransformationMatrix -> SVG.Tree -> [Path]
+        renderTree :: TransformationMatrix -> SVG.Tree -> [PathCommand]
         renderTree m (SVG.GroupTree g) = renderTrees (applyTransformations m (SVG._transform (SVG._groupDrawAttributes g))) (SVG._groupChildren g)
-        renderTree m (SVG.PathTree p) = map (transformPath tr) $ renderPathCommands (0,0) (0,0) Nothing (SVG._pathDefinition p)
+        renderTree m (SVG.PathTree p) = map (transform tr) $ renderPathCommands (0,0) (0,0) Nothing (SVG._pathDefinition p)
            where
                 tr = applyTransformations m (SVG._transform (SVG._pathDrawAttributes p))
 
         renderTree m (SVG.RectangleTree r)
             | rx == 0.0 && ry == 0.0
-                = map (transformPath tr) [MoveTo (x,y), LineTo (x+w,y), LineTo (x+w,y+h), LineTo (x,y+h), LineTo (x,y)]
+                = map (transform tr) [MoveTo (x,y), LineTo (x+w,y), LineTo (x+w,y+h), LineTo (x,y+h), LineTo (x,y)]
             | otherwise
-                = map (transformPath tr)
+                = map (transform tr)
                       ([MoveTo (x,y+ry)]     ++ convertSvgArc (x,y+ry) rx ry 0 False True (x+rx, y) ++
                        [LineTo (x+w-rx,y)]   ++ convertSvgArc (x+w-rx,y) rx ry 0 False True (x+w, y+ry) ++
                        [LineTo (x+w,y+h-ry)] ++ convertSvgArc (x+w,y+h-ry) rx ry 0 False True (x+w-rx, y+h) ++
@@ -221,21 +243,21 @@ renderDoc interpolation dpi resolution doc
 
         renderTree m (SVG.LineTree l) = [MoveTo p1, LineTo p2]
             where
-                p1 = transformPoint tr (fromSvgPoint dpi (SVG._linePoint1 l))
-                p2 = transformPoint tr (fromSvgPoint dpi (SVG._linePoint2 l))
+                p1 = transform tr (fromSvgPoint dpi (SVG._linePoint1 l))
+                p2 = transform tr (fromSvgPoint dpi (SVG._linePoint2 l))
                 tr = applyTransformations m (SVG._transform (SVG._lineDrawAttributes l))
 
-        renderTree m (SVG.PolyLineTree l) = map (transformPath tr) (MoveTo p0:map LineTo ps)
+        renderTree m (SVG.PolyLineTree l) = map (transform tr) (MoveTo p0:map LineTo ps)
             where
                 (p0:ps) = map (\(Linear.V2 x y) -> (x,y)) (SVG._polyLinePoints l)
                 tr = applyTransformations m (SVG._transform (SVG._polyLineDrawAttributes l))
 
-        renderTree m (SVG.PolygonTree l) = map (transformPath tr) (MoveTo p0:map LineTo (ps ++ [p0]))
+        renderTree m (SVG.PolygonTree l) = map (transform tr) (MoveTo p0:map LineTo (ps ++ [p0]))
             where
                 (p0:ps) = map (\(Linear.V2 x y) -> (x,y)) (SVG._polygonPoints l)
                 tr = applyTransformations m (SVG._transform (SVG._polygonDrawAttributes l))
 
-        renderTree m (SVG.EllipseTree e) = map (transformPath tr) (MoveTo (cx-rx,cy) : bs1++bs2++bs3++bs4)
+        renderTree m (SVG.EllipseTree e) = map (transform tr) (MoveTo (cx-rx,cy) : bs1++bs2++bs3++bs4)
             where
                 bs1 = convertSvgArc (cx-rx, cy) rx ry 0 False True (cx, cy-ry)
                 bs2 = convertSvgArc (cx, cy-ry) rx ry 0 False True (cx+rx, cy)
@@ -247,7 +269,7 @@ renderDoc interpolation dpi resolution doc
                 ry = fromSvgNumber dpi (SVG._ellipseYRadius e)
                 tr = applyTransformations m (SVG._transform (SVG._ellipseDrawAttributes e))
 
-        renderTree m (SVG.CircleTree c) = map (transformPath tr) (MoveTo (cx-r,cy) : bs1++bs2++bs3++bs4)
+        renderTree m (SVG.CircleTree c) = map (transform tr) (MoveTo (cx-r,cy) : bs1++bs2++bs3++bs4)
             where
                 bs1 = convertSvgArc (cx-r, cy) r r 0 False True (cx, cy-r)
                 bs2 = convertSvgArc (cx, cy-r) r r 0 False True (cx+r, cy)
@@ -261,5 +283,5 @@ renderDoc interpolation dpi resolution doc
         {- The rest: None, UseTree, SymbolTree, TextTree, ImageTree -}
         renderTree _ _ = []
 
-        renderTrees :: TransformationMatrix -> [SVG.Tree] -> [Path]
+        renderTrees :: TransformationMatrix -> [SVG.Tree] -> [PathCommand]
         renderTrees m es = concat $ map (renderTree m) es
