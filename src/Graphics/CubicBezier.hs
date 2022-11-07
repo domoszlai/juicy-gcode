@@ -25,7 +25,7 @@ instance Curve CubicBezier where
                         ((1 - t) ** 2) * 3 * t *^ _c1 bezier +
                         (t ** 2) * (1 - t) * 3 *^ _c2 bezier +
                         (t ** 3) *^ _p2 bezier
-                               
+
 splitAt :: CubicBezier -> Double -> (CubicBezier, CubicBezier)
 splitAt bezier t = (CubicBezier (_p1 bezier) p0 p01 dp, CubicBezier dp p12 p2 (_p2 bezier))
     where
