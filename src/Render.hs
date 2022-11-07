@@ -1,5 +1,5 @@
 module Render ( renderDoc,
-                Interpolation(..)
+                Approximation(..)
               ) where
 
 import qualified Graphics.Svg as SVG
@@ -9,15 +9,13 @@ import qualified Linear
 import Graphics.Path
 import Graphics.Point
 import Graphics.Transformation
-import Interpol.BiArc
+import Approx.BiArc
 import SvgArcSegment
 import SVGExt
 
-import qualified Graphics.CircularArc as CA
-import qualified Graphics.BiArc as BA
 import qualified Graphics.CubicBezier as B
 
-data Interpolation = BiArc | Linear | CubicBezier
+data Approximation = BiArc | Linear | CubicBezier
 
 mapTuple :: (a -> b) -> (a, a) -> (b, b)
 mapTuple f (a1, a2) = (f a1, f a2)
@@ -84,32 +82,26 @@ docTransform dpi doc = multiply mirrorTransform (viewBoxTransform $ SVG._viewBox
 
         (w, h) = (documentSize dpi doc)
 
-renderDoc :: Interpolation -> Int -> Double -> SVG.Document -> [PathCommand]
-renderDoc interpolation dpi resolution doc
+renderDoc :: Approximation -> Int -> Double -> SVG.Document -> [PathCommand]
+renderDoc approximation dpi resolution doc
     = stage2 $ renderTrees (docTransform dpi doc) (SVG._elements doc)
     where
         pxresolution = (fromIntegral dpi) / 2.45 / 10 * resolution
 
         -- TODO: make it tail recursive
         stage2 :: [PathCommand] -> [PathCommand]
-        stage2 dops = interpolate dops (Linear.V2 0 0)
+        stage2 dops = approximate dops (Linear.V2 0 0)
             where
-                interpolate [] _ = []
-                interpolate (MoveTo p:ds) _ = MoveTo p : interpolate ds (fromPoint p)
-                interpolate (LineTo p:ds) _ = LineTo p : interpolate ds (fromPoint p)
-                interpolate (ArcTo p1 p2 d:ds) _ = ArcTo p1 p2 d : interpolate ds (fromPoint p2)
-                interpolate (BezierTo c1 c2 p2:ds) cp =
-                    case interpolation of
-                        CubicBezier -> [BezierTo c1 c2 p2] ++ interpolate ds (fromPoint p2)
-                        _ -> concatMap biarc2garc 
-                                    (bezier2biarcs (B.CubicBezier cp (fromPoint c1) (fromPoint c2) (fromPoint p2)) pxresolution)
-                                ++ interpolate ds (fromPoint p2)
-                    where
-                        biarc2garc (Left biarc) 
-                            = [arc2garc (BA._a1 biarc), arc2garc (BA._a2 biarc)]
-                        biarc2garc (Right (Linear.V2 x y)) 
-                            = [LineTo (x,y)]
-                        arc2garc arc = ArcTo (toPoint (CA._c arc)) (toPoint (CA._p2 arc)) (CA.isClockwise arc)
+                approximate [] _ = []
+                approximate (MoveTo p:ds) _ = MoveTo p : approximate ds (fromPoint p)
+                approximate (LineTo p:ds) _ = LineTo p : approximate ds (fromPoint p)
+                approximate (ArcTo p1 p2 d:ds) _ = ArcTo p1 p2 d : approximate ds (fromPoint p2)
+                approximate (BezierTo c1 c2 p2:ds) cp =
+                    case approximation of
+                        CubicBezier -> [BezierTo c1 c2 p2] ++ approximate ds (fromPoint p2) 
+                        _ -> (bezier2biarcs
+                                    (B.CubicBezier cp (fromPoint c1) (fromPoint c2) (fromPoint p2)) pxresolution)
+                                ++ approximate ds (fromPoint p2)
 
         renderPathCommands :: Point -> Point -> Maybe Point -> [SVG.PathCommand] -> [PathCommand]
         renderPathCommands _ currentp _ (SVG.MoveTo origin (p:ps):ds)

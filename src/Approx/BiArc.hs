@@ -1,11 +1,14 @@
-module Interpol.BiArc ( 
+module Approx.BiArc ( 
     bezier2biarcs
 ) where
 
 import qualified Graphics.CubicBezier as B
 import qualified Graphics.BiArc as BA          
+import qualified Graphics.CircularArc as CA 
 import qualified Graphics.Line as L 
-          
+import Graphics.Path
+import Graphics.Point
+
 import Data.Bool (bool)
 import Linear
 
@@ -14,12 +17,12 @@ import Error
 -- Approximate a bezier curve with biarcs (Left) and line segments (Right)
 bezier2biarcs :: B.CubicBezier 
               -> Double
-              -> [Either BA.BiArc (V2 Double)]
+              -> [PathCommand]
 bezier2biarcs mbezier resolution 
     -- Edge case: all points on the same line -> it is a line 
     | (L.isOnLine (L.fromPoints (B._p2 mbezier) (B._p1 mbezier)) (B._c1 mbezier)) && 
       (L.isOnLine (L.fromPoints (B._p2 mbezier) (B._p1 mbezier)) (B._c2 mbezier)) 
-        = [Right (B._p2 mbezier)]
+        = [LineTo (toPoint (B._p2 mbezier))]
     -- Edge case: p1 == c1, don't split
     | (B._p1 mbezier) == (B._c1 mbezier)
         = approxOne mbezier
@@ -50,12 +53,12 @@ bezier2biarcs mbezier resolution
 
         byInflection _ = approxOne mbezier
          
-        -- TODO: make it tail recursive
-        approxOne :: B.CubicBezier -> [Either BA.BiArc (V2 Double)]
+        -- Recursive step (TODO: tail recursive) 
+        approxOne :: B.CubicBezier -> [PathCommand]
         approxOne bezier
             -- Approximate bezier length. if max length is smaller than resolution, do not approximate
             | B.maxArcLength bezier < resolution
-                = [Right (B._p2 bezier)]
+                = [LineTo (toPoint (B._p2 bezier))]
             -- Edge case: start- and endpoints are the same
             | (B._p1 bezier) == (B._p2 bezier)
                 = splitAndRecur 0.5
@@ -67,7 +70,7 @@ bezier2biarcs mbezier resolution
                 = splitAndRecur maxDistanceAt
             -- Desired case: approximation is stable and close enough
             | BA.isStable biarc
-                = [Left biarc]
+                = biarc2path biarc
             -- Unstable approximation: split the bezier into half, basically switching to
             -- linear approximation mode
             | otherwise
@@ -97,3 +100,8 @@ bezier2biarcs mbezier resolution
 
                 splitAndRecur t = let (b1, b2) = B.splitAt bezier t
                                    in approxOne b1 ++ approxOne b2 
+
+biarc2path :: BA.BiArc -> [PathCommand]
+biarc2path biarc = map 
+    (\arc -> ArcTo (toPoint (CA._c arc)) (toPoint (CA._p2 arc)) (CA.isClockwise arc))
+    [(BA._a1 biarc), (BA._a2 biarc)]

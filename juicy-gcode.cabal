@@ -19,7 +19,9 @@ executable juicy-gcode
   hs-source-dirs:           src
   main-is:                  Main.hs
 
-  other-modules:            Graphics.BiArc
+  other-modules:            Approx.BiArc
+                            Approx.Linear   
+                            Graphics.BiArc
                             Graphics.CircularArc 
                             Graphics.CubicBezier
                             Graphics.Curve
@@ -29,9 +31,7 @@ executable juicy-gcode
                             Graphics.Point
                             Graphics.Transformation 
                             Error
-                            GCode  
-                            Interpol.BiArc
-                            Interpol.Linear                            
+                            GCode                           
                             Render   
                             Utils
                             SvgArcSegment 

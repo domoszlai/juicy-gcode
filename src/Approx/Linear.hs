@@ -1,4 +1,4 @@
-module Interpol.Linear ( 
+module Approx.Linear ( 
     bezier2lines
 ) where
 
