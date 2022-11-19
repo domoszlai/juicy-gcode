@@ -24,7 +24,7 @@ instance Curve BiArc where
         | otherwise
             = pointAt (_a2 arc) ((t - s) / (1 - s))
         where
-            s = CA.arcLength (_a1 arc) / (arcLength arc)
+            s = CA.arcLength (_a1 arc) / arcLength arc
 
 fromPoints :: V2 Double -- Start point
            -> V2 Double -- Tangent vector at start point

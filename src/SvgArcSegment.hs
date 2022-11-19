@@ -41,7 +41,7 @@ convertSvgArc (x0,y0) radiusX radiusY angle largeArcFlag sweepFlag (x,y)
         rx   = if' (numerator < 0.0) (radiusX * s) radiusX
         ry   = if' (numerator < 0.0) (radiusY * s) radiusY
         root = if' (numerator < 0.0)
-                   (0.0)
+                   0.0
                    (if' ((largeArcFlag && sweepFlag) || (not largeArcFlag && not sweepFlag)) (-1.0) 1.0 *
                         sqrt(numerator / (radiusX * radiusX * y1dash * y1dash + radiusY * radiusY * x1dash * x1dash)))
 
