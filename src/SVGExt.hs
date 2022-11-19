@@ -18,8 +18,8 @@ documentSize _ SVG.Document { SVG._viewBox = Just (x1, y1, x2, y2)
 documentSize _ SVG.Document { SVG._width = Just (SVG.Num w)
                             , SVG._height = Just (SVG.Num h) } = (w, h)
 
-documentSize dpi doc@(SVG.Document { SVG._width = Just w
-                                   , SVG._height = Just h }) =
+documentSize dpi doc@SVG.Document { SVG._width = Just w
+                                  , SVG._height = Just h } =
     documentSize dpi $ doc
         { SVG._width = Just $ SVG.toUserUnit dpi w
         , SVG._height = Just $ SVG.toUserUnit dpi h }

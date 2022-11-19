@@ -1,7 +1,6 @@
-{-# LANGUAGE TypeSynonymInstances #-}
 {-# LANGUAGE FlexibleInstances #-}
 
-module Graphics.Transformation ( 
+module Graphics.Transformation (
       TransformationMatrix
     , fromElements
     , identityTransform

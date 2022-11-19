@@ -1,4 +1,6 @@
 {-# LANGUAGE TemplateHaskell #-}
+{-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
+{-# HLINT ignore "Use lambda-case" #-}
 
 import qualified Graphics.Svg as SVG
 
@@ -26,32 +28,32 @@ options = Options
   <$> argument str
       ( metavar "SVGFILE"
      <> help "The SVG file to be converted" )
-  <*> (optional $ strOption
+  <*> optional (strOption
       ( long "flavor"
      <> short 'f'
      <> metavar "CONFIGFILE"
      <> help "Configuration of G-Code flavor" ))
-  <*> (optional $ strOption
+  <*> optional (strOption
       ( long "output"
      <> short 'o'
      <> metavar "OUTPUTFILE"
      <> help "The output G-Code file (default is standard output)" ))
-  <*> (option auto
+  <*> option auto
       ( long "dpi"
      <> value 96
      <> short 'd'
      <> metavar "DPI"
-     <> help "Used to determine the size of the SVG when it does not contain any units; dot per inch (default is 96)" ))
- <*> (option auto
+     <> help "Used to determine the size of the SVG when it does not contain any units; dot per inch (default is 96)" )
+ <*> option auto
       ( long "resolution"
      <> value 0.1
      <> short 'r'
      <> metavar "RESOLUTION"
-     <> help "Shorter paths are replaced by line segments; mm (default is 0.1)" ))
-  <*> (switch
+     <> help "Shorter paths are replaced by line segments; mm (default is 0.1)" )
+  <*> switch
       ( long "generate-bezier"
       <> short 'b'
-      <> help "Generate bezier curves (G5) instead of arcs (G2,G3)" ))
+      <> help "Generate bezier curves (G5) instead of arcs (G2,G3)" )
 
 runWithOptions :: Options -> IO ()
 runWithOptions (Options svgFile mbCfg mbOut dpi resolution generateBezier) =
@@ -62,7 +64,7 @@ runWithOptions (Options svgFile mbCfg mbOut dpi resolution generateBezier) =
             (Just doc) -> writer (toString flavor dpi $ renderDoc generateBezier dpi resolution doc)
             Nothing    -> putStrLn "juicy-gcode: error during opening the SVG file"
     where
-        writer = maybe putStr (\fn -> writeFile fn) mbOut
+        writer = maybe putStr writeFile mbOut
 
 toLines :: Text -> String
 toLines t = unpack $ replace (pack ";") (pack "\n") t
@@ -77,7 +79,7 @@ readFlavor cfgFile = do
   return $ GCodeFlavor (toLines begin) (toLines end) (toLines toolon) (toLines tooloff)
 
 versionOption :: Parser (a -> a)
-versionOption = infoOption 
+versionOption = infoOption
                     (concat ["juicy-gcode ", showVersion version, ", git revision ", $(gitHash)])
                     (long "version" <> short 'v' <> help "Show version")
 

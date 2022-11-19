@@ -1,4 +1,4 @@
-module Graphics.Point ( 
+module Graphics.Point (
       Point
     , toPoint
     , fromPoint
@@ -12,4 +12,4 @@ toPoint :: V2 Double -> Point
 toPoint (V2 x y) = (x, y)
 
 fromPoint :: Point -> V2 Double
-fromPoint (x, y) = (V2 x y)
+fromPoint (x, y) = V2 x y

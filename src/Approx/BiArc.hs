@@ -1,11 +1,11 @@
-module Approx.BiArc ( 
+module Approx.BiArc (
     bezier2biarcs
 ) where
 
 import qualified Graphics.CubicBezier as B
-import qualified Graphics.BiArc as BA          
-import qualified Graphics.CircularArc as CA 
-import qualified Graphics.Line as L 
+import qualified Graphics.BiArc as BA
+import qualified Graphics.CircularArc as CA
+import qualified Graphics.Line as L
 import Graphics.Path
 import Graphics.Point
 
@@ -15,44 +15,44 @@ import Linear
 import Error
 
 -- Approximate a bezier curve with biarcs (Left) and line segments (Right)
-bezier2biarcs :: B.CubicBezier 
+bezier2biarcs :: B.CubicBezier
               -> Double
               -> [PathCommand]
-bezier2biarcs mbezier resolution 
+bezier2biarcs mbezier resolution
     -- Edge case: all points on the same line -> it is a line 
-    | (L.isOnLine (L.fromPoints (B._p2 mbezier) (B._p1 mbezier)) (B._c1 mbezier)) && 
-      (L.isOnLine (L.fromPoints (B._p2 mbezier) (B._p1 mbezier)) (B._c2 mbezier)) 
+    | L.isOnLine (L.fromPoints (B._p2 mbezier) (B._p1 mbezier)) (B._c1 mbezier) &&
+      L.isOnLine (L.fromPoints (B._p2 mbezier) (B._p1 mbezier)) (B._c2 mbezier)
         = [LineTo (toPoint (B._p2 mbezier))]
     -- Edge case: p1 == c1, don't split
-    | (B._p1 mbezier) == (B._c1 mbezier)
+    | B._p1 mbezier == B._c1 mbezier
         = approxOne mbezier
     -- Edge case: p2 == c2, don't split
-    | (B._p2 mbezier) == (B._c2 mbezier)
+    | B._p2 mbezier == B._c2 mbezier
         = approxOne mbezier
     -- Split by the inflexion points (if any)
-    | otherwise 
+    | otherwise
         = byInflection (B.inflectionPoints mbezier)
     where
         order a b | b < a = (b, a)
                   | otherwise = (a, b)
-    
+
         byInflection [t] = approxOne b1 ++ approxOne b2
             where
                 (b1, b2) = B.splitAt mbezier t
-    
+
         byInflection [t1, t2] = approxOne b1 ++ approxOne b2 ++ approxOne b3
             where
                 (it1, it2') = order t1 t2
-                
+
                 -- Make the first split and save the first new curve. The second one has to be splitted again
                 -- at the recalculated t2 (it is on a new curve)                
-                it2 = (1 - it1) * it2'        
-                
+                it2 = (1 - it1) * it2'
+
                 (b1, toSplit) = B.splitAt mbezier it1
                 (b2, b3) = B.splitAt toSplit it2
 
         byInflection _ = approxOne mbezier
-         
+
         -- Recursive step (TODO: tail recursive) 
         approxOne :: B.CubicBezier -> [PathCommand]
         approxOne bezier
@@ -60,10 +60,10 @@ bezier2biarcs mbezier resolution
             | B.maxArcLength bezier < resolution
                 = [LineTo (toPoint (B._p2 bezier))]
             -- Edge case: start- and endpoints are the same
-            | (B._p1 bezier) == (B._p2 bezier)
+            | B._p1 bezier == B._p2 bezier
                 = splitAndRecur 0.5
             -- Edge case: control lines are parallel
-            | (L._m t1) == (L._m t2) || (isNaN (L._m t1) && isNaN (L._m t2)) 
+            | L._m t1 == L._m t2 || isNaN (L._m t1) && isNaN (L._m t2)
                 = splitAndRecur 0.5
             -- Approximation is not close enough yet, refine
             | BA.isStable biarc && maxDistance > resolution
@@ -79,8 +79,8 @@ bezier2biarcs mbezier resolution
             where
                 -- Edge case: P1==C1 or P2==C2
                 -- there is no derivative at P1 or P2, use the other control point
-                c1 = bool (B._c1 bezier) (B._c2 bezier) ((B._p1 bezier) == (B._c1 bezier))
-                c2 = bool (B._c2 bezier) (B._c1 bezier) ((B._p2 bezier) == (B._c2 bezier))
+                c1 = bool (B._c1 bezier) (B._c2 bezier) (B._p1 bezier == B._c1 bezier)
+                c2 = bool (B._c2 bezier) (B._c1 bezier) (B._p2 bezier == B._c2 bezier)
 
                 -- V: Intersection point of tangent lines
                 t1 = L.fromPoints (B._p1 bezier) c1
@@ -95,13 +95,13 @@ bezier2biarcs mbezier resolution
 
                 -- Calculate the BiArc
                 biarc = BA.fromPoints (B._p1 bezier) (B._p1 bezier - c1) (B._p2 bezier) (B._p2 bezier - c2) g
-                                
+
                 (maxDistance, maxDistanceAt) = calculateDistance biarc bezier
 
                 splitAndRecur t = let (b1, b2) = B.splitAt bezier t
-                                   in approxOne b1 ++ approxOne b2 
+                                   in approxOne b1 ++ approxOne b2
 
 biarc2path :: BA.BiArc -> [PathCommand]
-biarc2path biarc = map 
+biarc2path biarc = map
     (\arc -> ArcTo (toPoint (CA._c arc)) (toPoint (CA._p2 arc)) (CA.isClockwise arc))
-    [(BA._a1 biarc), (BA._a2 biarc)]
+    [BA._a1 biarc, BA._a2 biarc]

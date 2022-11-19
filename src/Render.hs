@@ -1,6 +1,8 @@
-module Render ( 
+module Render (
     renderDoc
 ) where
+
+import Data.Maybe ( fromMaybe )
 
 import qualified Graphics.Svg as SVG
 import qualified Graphics.Svg.CssTypes as CSS
@@ -58,15 +60,15 @@ radiansPerDegree = pi / 180.0
 applyTransformation :: TransformationMatrix -> SVG.Transformation -> TransformationMatrix
 applyTransformation m (SVG.TransformMatrix a b c d e f) = multiply m (fromElements [a,b,c,d,e,f])
 applyTransformation m (SVG.Translate x y) = multiply m (fromElements [1,0,0,1,x,y])
-applyTransformation m (SVG.Scale sx mbSy) = multiply m (fromElements [sx,0,0,maybe sx id mbSy,0,0])
+applyTransformation m (SVG.Scale sx mbSy) = multiply m (fromElements [sx,0,0,Data.Maybe.fromMaybe sx mbSy,0,0])
 applyTransformation m (SVG.Rotate a Nothing)
-    = multiply m (fromElements [cos(r),sin(r),-sin(r),cos(r),0,0])
+    = multiply m (fromElements [cos r, sin r, -sin r, cos r , 0, 0])
     where
         r = a * radiansPerDegree
 applyTransformation m (SVG.Rotate a (Just (x, y))) = applyTransformations m (Just [SVG.Translate x y , SVG.Rotate a Nothing , SVG.Translate (-x) (-y)])
 applyTransformation m (SVG.SkewX a) = multiply m (fromElements [1,0,tan(a*radiansPerDegree),1,0,0])
 applyTransformation m (SVG.SkewY a) = multiply m (fromElements [1,tan(a*radiansPerDegree),0,1,0,0])
-applyTransformation m (SVG.TransformUnknown) = m
+applyTransformation m SVG.TransformUnknown = m
 
 docTransform :: Int -> SVG.Document -> TransformationMatrix
 docTransform dpi doc = multiply mirrorTransform (viewBoxTransform $ SVG._viewBox doc)
@@ -78,13 +80,13 @@ docTransform dpi doc = multiply mirrorTransform (viewBoxTransform $ SVG._viewBox
 
         mirrorTransform = mirrorYTransform w h
 
-        (w, h) = (documentSize dpi doc)
+        (w, h) = documentSize dpi doc
 
 renderDoc :: Bool -> Int -> Double -> SVG.Document -> [PathCommand]
 renderDoc generateBezier dpi resolution doc
     = stage2 $ renderTrees (docTransform dpi doc) (SVG._elements doc)
     where
-        pxresolution = (fromIntegral dpi) / 2.45 / 10 * resolution
+        pxresolution = fromIntegral dpi / 2.45 / 10 * resolution
 
         -- TODO: make it tail recursive
         stage2 :: [PathCommand] -> [PathCommand]
@@ -96,10 +98,10 @@ renderDoc generateBezier dpi resolution doc
                 approximate (ArcTo p1 p2 d:ds) _ = ArcTo p1 p2 d : approximate ds (fromPoint p2)
                 approximate (BezierTo c1 c2 p2:ds) cp
                     | generateBezier
-                        = [BezierTo c1 c2 p2] ++ approximate ds (fromPoint p2) 
+                        = BezierTo c1 c2 p2 : approximate ds (fromPoint p2)
                     | otherwise
-                        = (bezier2biarcs
-                                    (B.CubicBezier cp (fromPoint c1) (fromPoint c2) (fromPoint p2)) pxresolution)
+                        = bezier2biarcs
+                                    (B.CubicBezier cp (fromPoint c1) (fromPoint c2) (fromPoint p2)) pxresolution
                                 ++ approximate ds (fromPoint p2)
 
         renderPathCommands :: Point -> Point -> Maybe Point -> [SVG.PathCommand] -> [PathCommand]
@@ -275,4 +277,4 @@ renderDoc generateBezier dpi resolution doc
         renderTree _ _ = []
 
         renderTrees :: TransformationMatrix -> [SVG.Tree] -> [PathCommand]
-        renderTrees m es = concat $ map (renderTree m) es
+        renderTrees m es = concatMap (renderTree m) es
