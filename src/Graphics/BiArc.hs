@@ -2,7 +2,6 @@ module Graphics.BiArc (
       BiArc (..)
     , fromPoints
     , arcLength
-    , isStable
 ) where
 
 import qualified Graphics.CircularArc as CA
@@ -82,11 +81,4 @@ adjustSweepAngle _ angle = angle
 
 arcLength :: BiArc -> Double
 arcLength arc = CA.arcLength (_a1 arc) + CA.arcLength (_a2 arc)
-
--- Heuristics for unstable biarc: the radius of at least one of the arcs 
--- is too big or too small. Not too scientific...
-isStable :: BiArc -> Bool
-isStable biarc
-    = not (CA._r (_a1 biarc) > 99999 || CA._r (_a1 biarc) < 0.001 ||
-           CA._r (_a2 biarc) > 99999 || CA._r (_a2 biarc) < 0.001)
 

@@ -70,16 +70,15 @@ bezier2biarcs mbezier resolution
             -- Curve looks like this: https://pomax.github.io/bezierinfo/images/chapters/decasteljau/df92f529841f39decf9ad62b0967855a.png
             | B.isClockwise bezier /= isClockwise3 (B._p1 bezier) (B._p2 bezier) v
                 = splitAndRecur 0.5
+            -- Unstable approximation: split the bezier into half, it will switch to linear approximation if the segments get too small
+            | not (isStable biarc)
+                = splitAndRecur 0.5
             -- Approximation is not close enough yet, refine
-            | BA.isStable biarc && maxDistance > resolution
+            | maxDistance > resolution
                 = splitAndRecur maxDistanceAt
             -- Desired case: approximation is stable and close enough
-            | BA.isStable biarc
-                = biarc2path biarc
-            -- Unstable approximation: split the bezier into half, basically switching to
-            -- linear approximation mode
             | otherwise
-                = splitAndRecur 0.5 -- TODO: use linear if not stable
+                = biarc2path biarc
 
             where
                 -- Edge case: P1==C1 or P2==C2
@@ -110,3 +109,10 @@ biarc2path :: BA.BiArc -> [PathCommand]
 biarc2path biarc = map
     (\arc -> ArcTo (toPoint (CA._c arc)) (toPoint (CA._p2 arc)) (CA.isClockwise arc))
     [BA._a1 biarc, BA._a2 biarc]
+
+-- Heuristics for unstable biarc: the radius of at least one of the arcs 
+-- is too big or too small. Not too scientific...
+isStable :: BA.BiArc -> Bool
+isStable biarc
+    = not (CA._r (BA._a1 biarc) > 99999 || CA._r (BA._a1 biarc) < 0.001 ||
+           CA._r (BA._a2 biarc) > 99999 || CA._r (BA._a2 biarc) < 0.001)
