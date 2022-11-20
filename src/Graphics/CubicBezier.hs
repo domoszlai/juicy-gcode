@@ -39,12 +39,7 @@ splitAt bezier t = (CubicBezier (_p1 bezier) p0 p01 dp, CubicBezier dp p12 p2 (_
         dp = p01 + t *^ (p12 - p01)
 
 isClockwise :: CubicBezier -> Bool
-isClockwise bezier = s < 0
-    where
-        s = (_c1 bezier ^. _x - _p1 bezier  ^. _x) * (_c1 bezier ^. _y + _p1 bezier ^. _y)
-          + (_c2 bezier ^. _x - _c1 bezier  ^. _x) * (_c2 bezier ^. _y + _c1 bezier ^. _y)
-          + (_p2 bezier ^. _x - _c2 bezier  ^. _x) * (_p2 bezier ^. _y + _c2 bezier ^. _y)
-          + (_p1 bezier ^. _x - _p2 bezier  ^. _x) * (_p1 bezier ^. _y + _p2 bezier ^. _y)
+isClockwise bezier = isClockwise4 (_p1 bezier) (_c1 bezier) (_c2 bezier) (_p2 bezier)
 
 inflectionPoints :: CubicBezier -> [Double]
 inflectionPoints bezier

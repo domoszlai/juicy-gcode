@@ -6,6 +6,7 @@ import qualified Graphics.CubicBezier as B
 import qualified Graphics.BiArc as BA
 import qualified Graphics.CircularArc as CA
 import qualified Graphics.Line as L
+import Graphics.Curve
 import Graphics.Path
 import Graphics.Point
 
@@ -19,14 +20,14 @@ bezier2biarcs :: B.CubicBezier
               -> Double
               -> [PathCommand]
 bezier2biarcs mbezier resolution
-    -- Edge case: all points on the same line -> it is a line 
+    -- Degenerate curve: all points on the same line -> it is a line 
     | L.isOnLine (L.fromPoints (B._p2 mbezier) (B._p1 mbezier)) (B._c1 mbezier) &&
       L.isOnLine (L.fromPoints (B._p2 mbezier) (B._p1 mbezier)) (B._c2 mbezier)
         = [LineTo (toPoint (B._p2 mbezier))]
-    -- Edge case: p1 == c1, don't split
+    -- Degenerate curve: p1 == c1, don't split
     | B._p1 mbezier == B._c1 mbezier
         = approxOne mbezier
-    -- Edge case: p2 == c2, don't split
+    -- Degenerate curve: p2 == c2, don't split
     | B._p2 mbezier == B._c2 mbezier
         = approxOne mbezier
     -- Split by the inflexion points (if any)
@@ -64,6 +65,10 @@ bezier2biarcs mbezier resolution
                 = splitAndRecur 0.5
             -- Edge case: control lines are parallel
             | L._m t1 == L._m t2 || isNaN (L._m t1) && isNaN (L._m t2)
+                = splitAndRecur 0.5
+            -- Biarc triangle has the wrong orientation
+            -- Curve looks like this: https://pomax.github.io/bezierinfo/images/chapters/decasteljau/df92f529841f39decf9ad62b0967855a.png
+            | B.isClockwise bezier /= isClockwise3 (B._p1 bezier) (B._p2 bezier) v
                 = splitAndRecur 0.5
             -- Approximation is not close enough yet, refine
             | BA.isStable biarc && maxDistance > resolution
