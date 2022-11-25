@@ -1,3 +1,5 @@
+{-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
+{-# HLINT ignore "Redundant bracket" #-}
 module Approx.BiArc (
     bezier2biarcs
 ) where
@@ -9,11 +11,18 @@ import qualified Graphics.Line as L
 import Graphics.Curve
 import Graphics.Path
 import Graphics.Point
+import Utils
 
 import Data.Bool (bool)
+import Control.Lens
 import Linear
 
-import Error
+import Debug.Trace
+
+eps :: Double
+eps = 0.0001
+maxiter :: Double
+maxiter = 10
 
 -- Approximate a bezier curve with biarcs (Left) and line segments (Right)
 bezier2biarcs :: B.CubicBezier
@@ -72,7 +81,7 @@ bezier2biarcs mbezier resolution
                 = splitAndRecur 0.5
             -- Unstable approximation: split the bezier into half, it will switch to linear approximation if the segments get too small
             | not (isStable biarc)
-                = splitAndRecur 0.5
+                = Debug.Trace.trace "Buu" splitAndRecur 0.5
             -- Approximation is not close enough yet, refine
             | maxDistance > resolution
                 = splitAndRecur maxDistanceAt
@@ -100,7 +109,7 @@ bezier2biarcs mbezier resolution
                 -- Calculate the BiArc
                 biarc = BA.fromPoints (B._p1 bezier) (B._p1 bezier - c1) (B._p2 bezier) (B._p2 bezier - c2) g
 
-                (maxDistance, maxDistanceAt) = calculateDistance biarc bezier
+                (maxDistanceAt, maxDistance) = calculateMaxDistance bezier biarc
 
                 splitAndRecur t = let (b1, b2) = B.splitAt bezier t
                                    in approxOne b1 ++ approxOne b2
@@ -116,3 +125,71 @@ isStable :: BA.BiArc -> Bool
 isStable biarc
     = not (CA._r (BA._a1 biarc) > 99999 || CA._r (BA._a1 biarc) < 0.001 ||
            CA._r (BA._a2 biarc) > 99999 || CA._r (BA._a2 biarc) < 0.001)
+
+-- Calculate the maximum approximation error along the radial direction
+-- D.J. Walton*, D.S. Meek, Approximation of a planar cubic Bezier spiral by circular arcs (1996)
+calculateMaxDistance :: B.CubicBezier -> BA.BiArc -> (Double, Double)
+calculateMaxDistance bezier biarc
+    -- This should not happenm but if, split the bezier at the middle
+    | tj == -1 = (0.5, 0x7FEFFFFFFFFFFFFF)
+    | otherwise = bigger (bigger (tj, dj) (t0, d0)) (t1, d1)
+    where
+        tj = findRadialIntersection bezier biarc (BA.jointAt biarc)
+        dj = distance (pointAt bezier tj) (pointAt biarc (BA.jointAt biarc))
+
+        g arc u = dot (pointAt bezier u - CA._c arc) (B.firstDerivativeAt bezier u)
+        g' arc u = quadrance (B.firstDerivativeAt bezier u) +
+                   dot (pointAt bezier u - CA._c arc) (B.secondDerivativeAt bezier u)
+
+        bigger f@(_, df) s@(ts, ds)
+            | ts == -1 = f
+            | df > ds = f
+            | otherwise = s
+
+        -- Valid in (0,tj]
+        t0 = findRoot (g (BA._a1 biarc)) (g' (BA._a1 biarc)) eps tj
+        d0 = abs ((distance (pointAt bezier t0) (CA._c (BA._a1 biarc))) - (CA._r (BA._a1 biarc)))
+        -- Valid in [tj,1)
+        t1 = findRoot (g (BA._a2 biarc)) (g' (BA._a2 biarc)) tj (1 - eps)
+        d1 = abs ((distance (pointAt bezier t1) (CA._c (BA._a2 biarc))) - (CA._r (BA._a2 biarc)))
+
+-- Takes a paramater `t` fore the `biarc` and calculates the the related parameter fo
+-- the `bezier` (which is the intersection point in the radial direction)
+findRadialIntersection :: B.CubicBezier -> BA.BiArc -> Double -> Double
+findRadialIntersection bezier biarc t
+    | t == 0 || t == 1 = t
+    | otherwise = findRoot (\u -> dot (pointAt bezier u - p) h) (\u -> dot (B.firstDerivativeAt bezier u) h) 0 1
+    where
+        p = pointAt biarc t
+        c = CA._c $ if' (t <= BA.jointAt biarc) (BA._a1 biarc) (BA._a2 biarc)
+        m = p - c
+        h = normalize $ V2 (negate (m ^. _y)) (m ^. _x)
+
+-- Tries to find the root of f in interval [lowerBound,upperBound] using a combination of
+-- Newton and bisection methods.
+-- It is supposed to have at most one solution. If no solution is found, returns -1
+findRoot :: (Double -> Double) -> (Double -> Double) -> Double -> Double -> Double
+findRoot f df lowerBound upperBound
+    | fl * fu > 0 = -1
+    | fl == 0 = lowerBound
+    | fu == 0 = upperBound
+    | otherwise = iter maxiter fl fu lowerBound upperBound ((lowerBound + upperBound) / 2)
+    where
+        fl = f lowerBound
+        fu = f upperBound
+
+        iter i fmin fmax lb ub root
+            -- we're good, or if i==0, we may not reached tolarence yet, but hopefully it is close enough
+            | abs fx < eps || i <= 0 = root
+            -- overshoot or undershoot -> switch to bisection
+            | n < lb || n > ub
+                = if' (fmin * fx < 0)
+                    (iter (i-1) fmin fx lb root ((lb + root) / 2))
+                    (iter (i-1) fx fmax root ub ((root + ub) / 2))
+            -- Newton step
+            | otherwise
+                = iter (i-1) fmin fmax lb ub n
+            where
+                fx = f root
+                h = fx / df root
+                n = root - h

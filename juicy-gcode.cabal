@@ -29,7 +29,6 @@ executable juicy-gcode
                             Graphics.Path
                             Graphics.Point
                             Graphics.Transformation 
-                            Error
                             GCode                           
                             Render   
                             Utils

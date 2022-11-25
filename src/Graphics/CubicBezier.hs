@@ -1,5 +1,7 @@
 module Graphics.CubicBezier (
       CubicBezier (..)
+    , firstDerivativeAt
+    , secondDerivativeAt
     , splitAt
     , isClockwise
     , inflectionPoints
@@ -21,10 +23,20 @@ data CubicBezier = CubicBezier { _p1 :: V2 Double
                                } deriving Show
 
 instance Curve CubicBezier where
-    pointAt bezier t =  ((1 - t) ** 3) *^ _p1 bezier +
+    pointAt bezier t =  (1 - t) ** 3 *^ _p1 bezier +
                         (1 - t) ** 2 * 3 * t *^ _c1 bezier +
                         t ** 2 * (1 - t) * 3 *^ _c2 bezier +
-                        (t ** 3) *^ _p2 bezier
+                        t ** 3 *^ _p2 bezier
+
+firstDerivativeAt :: CubicBezier -> Double -> V2 Double
+firstDerivativeAt bezier t = (1 - t) ** 2 * 3 *^ (_c1 bezier - _p1 bezier) +
+                             (1 - t) * t * 6 *^ (_c2 bezier - _c1 bezier) +
+                             t * t * 3 *^ (_p2 bezier - _c2 bezier)
+
+secondDerivativeAt :: CubicBezier -> Double -> V2 Double
+secondDerivativeAt bezier t = (1 - t) * 6 *^ (_c2 bezier - 2 *^ _c1 bezier + _p1 bezier) +
+                              t * 6 *^ (_p2 bezier - 2 *^ _c2 bezier + _c1 bezier)
+
 
 splitAt :: CubicBezier -> Double -> (CubicBezier, CubicBezier)
 splitAt bezier t = (CubicBezier (_p1 bezier) p0 p01 dp, CubicBezier dp p12 p2 (_p2 bezier))

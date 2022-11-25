@@ -2,6 +2,7 @@ module Graphics.BiArc (
       BiArc (..)
     , fromPoints
     , arcLength
+    , jointAt
 ) where
 
 import qualified Graphics.CircularArc as CA
@@ -23,7 +24,7 @@ instance Curve BiArc where
         | otherwise
             = pointAt (_a2 arc) ((t - s) / (1 - s))
         where
-            s = CA.arcLength (_a1 arc) / arcLength arc
+            s = jointAt arc
 
 fromPoints :: V2 Double -- Start point
            -> V2 Double -- Tangent vector at start point
@@ -82,3 +83,5 @@ adjustSweepAngle _ angle = angle
 arcLength :: BiArc -> Double
 arcLength arc = CA.arcLength (_a1 arc) + CA.arcLength (_a2 arc)
 
+jointAt :: BiArc -> Double
+jointAt arc = CA.arcLength (_a1 arc) / arcLength arc
