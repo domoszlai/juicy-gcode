@@ -1,5 +1,10 @@
 # Revision history for juicy-gcode
 
+## 0.2.1.0 -- 2022-11-26
+
+- The approximation error is now calculated along the radial direction
+- The approximation error calculation is now exact instead of sampling-based
+
 ## 0.2.0.2 -- 2022-10-31
 
 - Fix a problem triggered by non-quadratic inflexion point equations

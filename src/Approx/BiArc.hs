@@ -151,7 +151,7 @@ calculateMaxDistance bezier biarc
         t1 = findRoot (g (BA._a2 biarc)) (g' (BA._a2 biarc)) tj (1 - eps)
         d1 = abs ((distance (pointAt bezier t1) (CA._c (BA._a2 biarc))) - (CA._r (BA._a2 biarc)))
 
--- Takes a paramater `t` fore the `biarc` and calculates the the related parameter fo
+-- Takes a paramater `t` fore the `biarc` and calculates the related parameter fo
 -- the `bezier` (which is the intersection point in the radial direction)
 findRadialIntersection :: B.CubicBezier -> BA.BiArc -> Double -> Double
 findRadialIntersection bezier biarc t
