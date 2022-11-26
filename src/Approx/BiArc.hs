@@ -17,8 +17,6 @@ import Data.Bool (bool)
 import Control.Lens
 import Linear
 
-import Debug.Trace
-
 eps :: Double
 eps = 0.0001
 maxiter :: Double
@@ -81,7 +79,7 @@ bezier2biarcs mbezier resolution
                 = splitAndRecur 0.5
             -- Unstable approximation: split the bezier into half, it will switch to linear approximation if the segments get too small
             | not (isStable biarc)
-                = Debug.Trace.trace "Buu" splitAndRecur 0.5
+                = splitAndRecur 0.5
             -- Approximation is not close enough yet, refine
             | maxDistance > resolution
                 = splitAndRecur maxDistanceAt
