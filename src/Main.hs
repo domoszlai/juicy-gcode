@@ -14,13 +14,14 @@ import qualified Data.Configurator as C
 
 import Render
 import GCode
+import Data.Maybe (fromMaybe)
 
 data Options = Options { _svgfile        :: String
                        , _cfgfile        :: Maybe String
                        , _outfile        :: Maybe String
                        , _dpi            :: Int
                        , _resolution     :: Double
-                       , _generateBezier :: Bool
+                       , _approximation  :: Maybe Approximation
                        }
 
 options :: Parser Options
@@ -45,23 +46,31 @@ options = Options
      <> metavar "DPI"
      <> help "Used to determine the size of the SVG when it does not contain any units; dot per inch (default is 96)" )
  <*> option auto
-      ( long "resolution"
+      ( long "tolerance"
      <> value 0.1
-     <> short 'r'
-     <> metavar "RESOLUTION"
-     <> help "Shorter paths are replaced by line segments; mm (default is 0.1)" )
-  <*> switch
-      ( long "generate-bezier"
-      <> short 'b'
-      <> help "Generate bezier curves (G5) instead of arcs (G2,G3)" )
+     <> short 't'
+     <> metavar "TOLERANCE"
+     <> help "Maximum derivation of the approximation curve" )
+  <*> optional (option parseApproximation
+      ( long "curve-fitting"
+      <> short 'c'
+      <> metavar "TYPE"
+      <> help "Bezier curve approximation algorithm. TYPE can be linear, biarc (default) or cubic-bezier" ))
+
+parseApproximation :: ReadM Approximation
+parseApproximation = str >>= \s -> case s of
+      "biarc"        -> return BiArc
+      "linear"       -> return Linear
+      "cubic-bezier" -> return CubicBezier
+      _ -> readerError "Accepted bezier approximation types are 'biarc', 'linear', and 'cubic-bezier'."
 
 runWithOptions :: Options -> IO ()
-runWithOptions (Options svgFile mbCfg mbOut dpi resolution generateBezier) =
+runWithOptions (Options svgFile mbCfg mbOut dpi resolution mbApproximation) =
     do
         mbDoc <- SVG.loadSvgFile svgFile
         flavor <- maybe (return defaultFlavor) readFlavor mbCfg
         case mbDoc of
-            (Just doc) -> writer (toString flavor dpi $ renderDoc generateBezier dpi resolution doc)
+            (Just doc) -> writer (toString flavor dpi $ renderDoc (fromMaybe BiArc mbApproximation) dpi resolution doc)
             Nothing    -> putStrLn "juicy-gcode: error during opening the SVG file"
     where
         writer = maybe putStr writeFile mbOut

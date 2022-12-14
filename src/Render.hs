@@ -1,4 +1,5 @@
 module Render (
+    Approximation(..),
     renderDoc
 ) where
 
@@ -12,6 +13,7 @@ import Graphics.Path
 import Graphics.Point
 import Graphics.Transformation
 import Approx.BiArc
+import Approx.Linear
 import SvgArcSegment
 import SVGExt
 
@@ -82,8 +84,10 @@ docTransform dpi doc = multiply mirrorTransform (viewBoxTransform $ SVG._viewBox
 
         (w, h) = documentSize dpi doc
 
-renderDoc :: Bool -> Int -> Double -> SVG.Document -> [PathCommand]
-renderDoc generateBezier dpi resolution doc
+data Approximation = BiArc | CubicBezier | Linear
+
+renderDoc :: Approximation -> Int -> Double -> SVG.Document -> [PathCommand]
+renderDoc approximation dpi resolution doc
     = stage2 $ renderTrees (docTransform dpi doc) (SVG._elements doc)
     where
         pxresolution = fromIntegral dpi / 2.45 / 10 * resolution
@@ -96,13 +100,15 @@ renderDoc generateBezier dpi resolution doc
                 approximate (MoveTo p:ds) _ = MoveTo p : approximate ds (fromPoint p)
                 approximate (LineTo p:ds) _ = LineTo p : approximate ds (fromPoint p)
                 approximate (ArcTo p1 p2 d:ds) _ = ArcTo p1 p2 d : approximate ds (fromPoint p2)
-                approximate (BezierTo c1 c2 p2:ds) cp
-                    | generateBezier
-                        = BezierTo c1 c2 p2 : approximate ds (fromPoint p2)
-                    | otherwise
-                        = bezier2biarcs
-                                    (B.CubicBezier cp (fromPoint c1) (fromPoint c2) (fromPoint p2)) pxresolution
-                                ++ approximate ds (fromPoint p2)
+                approximate (BezierTo c1 c2 p2:ds) cp =
+                    case approximation of
+                        BiArc       -> bezier2biarcs
+                                                (B.CubicBezier cp (fromPoint c1) (fromPoint c2) (fromPoint p2)) pxresolution
+                                            ++ approximate ds (fromPoint p2)
+                        CubicBezier -> BezierTo c1 c2 p2 : approximate ds (fromPoint p2)
+                        Linear      -> linearApprox
+                                                (B.CubicBezier cp (fromPoint c1) (fromPoint c2) (fromPoint p2)) pxresolution
+                                            ++ approximate ds (fromPoint p2)
 
         renderPathCommands :: Point -> Point -> Maybe Point -> [SVG.PathCommand] -> [PathCommand]
         renderPathCommands _ currentp _ (SVG.MoveTo origin (p:ps):ds)

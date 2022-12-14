@@ -23,6 +23,7 @@ maxiter :: Double
 maxiter = 10
 
 -- Approximate a bezier curve with biarcs (Left) and line segments (Right)
+-- M.A. Sabin, The use of piecewise forms for the numerical representation of shape (1977)
 bezier2biarcs :: B.CubicBezier
               -> Double
               -> [PathCommand]
@@ -33,10 +34,10 @@ bezier2biarcs mbezier resolution
         = [LineTo (toPoint (B._p2 mbezier))]
     -- Degenerate curve: p1 == c1, don't split
     | B._p1 mbezier == B._c1 mbezier
-        = approxOne mbezier
+        = approxSpiral mbezier
     -- Degenerate curve: p2 == c2, don't split
     | B._p2 mbezier == B._c2 mbezier
-        = approxOne mbezier
+        = approxSpiral mbezier
     -- Split by the inflexion points (if any)
     | otherwise
         = byInflection (B.inflectionPoints mbezier)
@@ -44,11 +45,11 @@ bezier2biarcs mbezier resolution
         order a b | b < a = (b, a)
                   | otherwise = (a, b)
 
-        byInflection [t] = approxOne b1 ++ approxOne b2
+        byInflection [t] = approxSpiral b1 ++ approxSpiral b2
             where
                 (b1, b2) = B.splitAt mbezier t
 
-        byInflection [t1, t2] = approxOne b1 ++ approxOne b2 ++ approxOne b3
+        byInflection [t1, t2] = approxSpiral b1 ++ approxSpiral b2 ++ approxSpiral b3
             where
                 (it1, it2') = order t1 t2
 
@@ -59,11 +60,11 @@ bezier2biarcs mbezier resolution
                 (b1, toSplit) = B.splitAt mbezier it1
                 (b2, b3) = B.splitAt toSplit it2
 
-        byInflection _ = approxOne mbezier
+        byInflection _ = approxSpiral mbezier
 
-        -- Recursive step (TODO: tail recursive) 
-        approxOne :: B.CubicBezier -> [PathCommand]
-        approxOne bezier
+        -- Apprixmate one bezier spiral
+        approxSpiral :: B.CubicBezier -> [PathCommand]
+        approxSpiral bezier
             -- Approximate bezier length. if max length is smaller than resolution, do not approximate
             | B.maxArcLength bezier < resolution
                 = [LineTo (toPoint (B._p2 bezier))]
@@ -110,7 +111,7 @@ bezier2biarcs mbezier resolution
                 (maxDistanceAt, maxDistance) = calculateMaxDistance bezier biarc
 
                 splitAndRecur t = let (b1, b2) = B.splitAt bezier t
-                                   in approxOne b1 ++ approxOne b2
+                                   in approxSpiral b1 ++ approxSpiral b2
 
 biarc2path :: BA.BiArc -> [PathCommand]
 biarc2path biarc = map
@@ -125,7 +126,7 @@ isStable biarc
            CA._r (BA._a2 biarc) > 99999 || CA._r (BA._a2 biarc) < 0.001)
 
 -- Calculate the maximum approximation error along the radial direction
--- D.J. Walton*, D.S. Meek, Approximation of a planar cubic Bezier spiral by circular arcs (1996)
+-- D.J. Walton, D.S. Meek, Approximation of a planar cubic Bezier spiral by circular arcs (1996)
 calculateMaxDistance :: B.CubicBezier -> BA.BiArc -> (Double, Double)
 calculateMaxDistance bezier biarc
     -- This should not happenm but if, split the bezier at the middle

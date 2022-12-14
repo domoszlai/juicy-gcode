@@ -20,6 +20,7 @@ executable juicy-gcode
   main-is:                  Main.hs
 
   other-modules:            Approx.BiArc
+                            Approx.Linear
                             Graphics.BiArc
                             Graphics.CircularArc 
                             Graphics.CubicBezier

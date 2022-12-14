@@ -5,7 +5,10 @@
 
 ## Overview
 
-Juicy-gcode is a configurable SVG to G-code converter that approximates bezier curves with [biarcs](http://dlacko.org/blog/2016/10/19/approximating-bezier-curves-by-biarcs/) for maximal curve fitting.
+Juicy-gcode is a configurable SVG to G-code converter that approximates bezier curves based on your needs:
+- with [biarcs](http://dlacko.org/blog/2016/10/19/approximating-bezier-curves-by-biarcs/) for maximal curve fitting: bezier curves are approximated with arcs ([G2, G3 commands](https://marlinfw.org/meta/gcode/)), the resulting path is [G1 continues](https://skill-lync.com/blogs/introductions-to-surface-continuities-and-its-types)
+- with linear approximation when arcs are not supported by your firmware: bezier curves are approximated with line segments ([G0, G1 commands](https://marlinfw.org/meta/gcode/)), the resulting path is [not smooth](https://skill-lync.com/blogs/introductions-to-surface-continuities-and-its-types), and the generated gcode is usually significantly larger 
+- with cubic bezier curves if your firmware supports it: some firmwares (e.g. [Marlin](https://marlinfw.org/docs/gcode/G005.html)) can handle bezier curves directly ([G5 command](https://marlinfw.org/meta/gcode/)), the result is [G2 continues](https://skill-lync.com/blogs/introductions-to-surface-continuities-and-its-types)
 
 ## Installation
 
@@ -20,9 +23,11 @@ Alternatively, you can build from source code as follows:
 
 ## Usage
 
+> :warning: **Breaking change**: Since version 0.3.0.0, `--generate-bezier` has been replaced with the more generic `--curve-fitting` parameter and `--resolution` has been replaced by `--tolerance`
+
 > :warning: **Breaking change**: Since version 0.2.0.1, default DPI is changed to 96 and the option to mirror the Y axis is removed (it is always mirrored now for correct result)
 
-The easier way to use juicy-gcode is to simply provide an SVG file name. The generated GCode will be written to standard output.
+The easier way to use juicy-gcode is to simply provide an SVG file name. The generated GCode will be written to standard output. The default approximation method is the biarcs based.
 
 ```
 $ juicy-gcode SVGFILE
@@ -37,17 +42,22 @@ $ juicy-gcode SVGFILE -o OUTPUT
 Sometimes you want to overwrite some default settings. These are the 
 
 * *--dpi* (default 96 DPI) [the resolution of the SVG file](https://developer.mozilla.org/en-US/docs/Web/CSS/resolution) that is used to determine the size of the SVG when it does not contain explicit units
-* *--resolution* (default is 0.1 mm) the resolution of the generated GCode. Paths smaller than this are replaced by line segments instead of further approximated by biarcs
+* *--tolerance* (default is 0.1 mm) maximum allowed derivation of the approximation curve
  
 ```
-$ juicy-gcode SVGFILE --dpi 72 --resolution 0.01 
+$ juicy-gcode SVGFILE --dpi 72 --tolerance 0.01 
 ```
 
-Some firmwares (e.g. [Marlin](https://marlinfw.org/docs/gcode/G005.html)) can handle bezier curves directly. In this case
-you can command juicy-gcode not to approximate bezier-curves but emit them unchanged. 
+Curve fitting options:
 
 ```
-$ juicy-gcode SVGFILE --generate-bezier
+$ juicy-gcode SVGFILE --curve-fitting=biarc
+```
+```
+$ juicy-gcode SVGFILE --curve-fitting=linear
+```
+```
+$ juicy-gcode SVGFILE --curve-fitting=cubic-bezier
 ```
 
 ## Configuration
