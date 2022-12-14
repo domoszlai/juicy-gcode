@@ -23,7 +23,7 @@ Alternatively, you can build from source code as follows:
 
 ## Usage
 
-> :warning: **Breaking change**: Since version 0.3.0.0, `--generate-bezier` has been replaced with the more generic `--curve-fitting` parameter and `--resolution` has been replaced by `--tolerance`
+> :warning: **Breaking change**: Since version 0.3.0.0, `--generate-bezier` has been removed in favor of the more generic `--curve-fitting` parameter and `--resolution` has been renamed to `--tolerance`
 
 > :warning: **Breaking change**: Since version 0.2.0.1, default DPI is changed to 96 and the option to mirror the Y axis is removed (it is always mirrored now for correct result)
 
@@ -48,7 +48,7 @@ Sometimes you want to overwrite some default settings. These are the
 $ juicy-gcode SVGFILE --dpi 72 --tolerance 0.01 
 ```
 
-Curve fitting options:
+Curve fitting options (default is `biarc`):
 
 ```
 $ juicy-gcode SVGFILE --curve-fitting=biarc

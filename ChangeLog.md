@@ -1,5 +1,12 @@
 # Revision history for juicy-gcode
 
+## 0.3.0.0 -- 2022-12-14
+
+- Add linear approximation algorithm
+- New option: --curve-fitting
+- Breaking change: --generate-bezier has been removed in favor of --curve-fitting
+- Breaking change: --resolution has been renamed to --tolerance
+
 ## 0.2.1.0 -- 2022-11-26
 
 - The approximation error is now calculated along the radial direction
