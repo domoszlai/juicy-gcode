@@ -1,8 +1,11 @@
 module Graphics.Path ( 
-      PathCommand(..)
+      PathCommand(..),
+      ColoredPath(..)
 ) where
 
 import Graphics.Point
+
+data ColoredPath = ColoredPath (Maybe String) [PathCommand]
 
 -- all of them are invariant under affine transformation
 data PathCommand 

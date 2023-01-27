@@ -4,9 +4,12 @@ module Render (
 ) where
 
 import Data.Maybe ( fromMaybe )
+import Data.Monoid
 
 import qualified Graphics.Svg as SVG
 import qualified Graphics.Svg.CssTypes as CSS
+import Graphics.Svg.Types (DrawAttributes)
+
 import qualified Linear
 
 import Graphics.Path
@@ -86,15 +89,16 @@ docTransform dpi doc = multiply mirrorTransform (viewBoxTransform $ SVG._viewBox
 
 data Approximation = BiArc | CubicBezier | Linear
 
-renderDoc :: Approximation -> Int -> Double -> SVG.Document -> [PathCommand]
+renderDoc :: Approximation -> Int -> Double -> SVG.Document -> [ColoredPath]
 renderDoc approximation dpi resolution doc
     = stage2 $ renderTrees (docTransform dpi doc) (SVG._elements doc)
     where
         pxresolution = fromIntegral dpi / 2.45 / 10 * resolution
 
         -- TODO: make it tail recursive
-        stage2 :: [PathCommand] -> [PathCommand]
-        stage2 dops = approximate dops (Linear.V2 0 0)
+        stage2 :: [ColoredPath] -> [ColoredPath]
+        stage2 = map (\(ColoredPath color path) -> 
+                            ColoredPath color (approximate path (Linear.V2 0 0)))
             where
                 approximate [] _ = []
                 approximate (MoveTo p:ds) _ = MoveTo p : approximate ds (fromPoint p)
@@ -217,64 +221,84 @@ renderDoc approximation dpi resolution doc
 
         renderPathCommands _ _ _ _ = []
 
-        renderTree :: TransformationMatrix -> SVG.Tree -> [PathCommand]
+        extractColor :: DrawAttributes -> Maybe String
+        extractColor attr = case getLast $ SVG._strokeColor attr of
+                                (Just (SVG.ColorRef rgba8)) -> Just (show rgba8)
+                                _ -> Nothing
+
+        renderTree :: TransformationMatrix -> SVG.Tree -> [ColoredPath]
         renderTree m (SVG.GroupTree g) = renderTrees (applyTransformations m (SVG._transform (SVG._groupDrawAttributes g))) (SVG._groupChildren g)
-        renderTree m (SVG.PathTree p) = map (transform tr) $ renderPathCommands (0,0) (0,0) Nothing (SVG._pathDefinition p)
+        renderTree m (SVG.PathTree p) 
+            = [ColoredPath color 
+                    (map (transform tr) $ renderPathCommands (0,0) (0,0) Nothing (SVG._pathDefinition p))]
            where
+                color = extractColor (SVG._pathDrawAttributes p)
                 tr = applyTransformations m (SVG._transform (SVG._pathDrawAttributes p))
 
         renderTree m (SVG.RectangleTree r)
             | rx == 0.0 && ry == 0.0
-                = map (transform tr) [MoveTo (x,y), LineTo (x+w,y), LineTo (x+w,y+h), LineTo (x,y+h), LineTo (x,y)]
+                = [ColoredPath color
+                    (map (transform tr) [MoveTo (x,y), LineTo (x+w,y), LineTo (x+w,y+h), LineTo (x,y+h), LineTo (x,y)])]
             | otherwise
-                = map (transform tr)
+                = [ColoredPath color
+                    (map (transform tr)
                       ([MoveTo (x,y+ry)]     ++ convertSvgArc (x,y+ry) rx ry 0 False True (x+rx, y) ++
                        [LineTo (x+w-rx,y)]   ++ convertSvgArc (x+w-rx,y) rx ry 0 False True (x+w, y+ry) ++
                        [LineTo (x+w,y+h-ry)] ++ convertSvgArc (x+w,y+h-ry) rx ry 0 False True (x+w-rx, y+h) ++
                        [LineTo (x+rx,y+h)]   ++ convertSvgArc (x+rx, y+h) rx ry 0 False True (x, y+h-ry) ++
-                       [LineTo (x,y+ry)])
+                       [LineTo (x,y+ry)]))]
             where
+                color = extractColor (SVG._rectDrawAttributes r)
                 (x,y) = fromSvgPoint dpi (SVG._rectUpperLeftCorner r)
                 w = fromSvgNumber dpi (SVG._rectWidth r)
                 h = fromSvgNumber dpi (SVG._rectHeight r)
                 (rx, ry) = mapTuple (fromSvgNumber dpi) (SVG._rectCornerRadius r)
                 tr = applyTransformations m (SVG._transform (SVG._rectDrawAttributes r))
 
-        renderTree m (SVG.LineTree l) = [MoveTo p1, LineTo p2]
+        renderTree m (SVG.LineTree l) = [ColoredPath color [MoveTo p1, LineTo p2]]
             where
+                color = extractColor (SVG._lineDrawAttributes l)
                 p1 = transform tr (fromSvgPoint dpi (SVG._linePoint1 l))
                 p2 = transform tr (fromSvgPoint dpi (SVG._linePoint2 l))
                 tr = applyTransformations m (SVG._transform (SVG._lineDrawAttributes l))
 
-        renderTree m (SVG.PolyLineTree l) = map (transform tr) (MoveTo p0:map LineTo ps)
+        renderTree m (SVG.PolyLineTree l) 
+                = [ColoredPath color (map (transform tr) (MoveTo p0:map LineTo ps))]
             where
+                color = extractColor (SVG._polyLineDrawAttributes l)
                 (p0:ps) = map (\(Linear.V2 x y) -> (x,y)) (SVG._polyLinePoints l)
                 tr = applyTransformations m (SVG._transform (SVG._polyLineDrawAttributes l))
 
-        renderTree m (SVG.PolygonTree l) = map (transform tr) (MoveTo p0:map LineTo (ps ++ [p0]))
+        renderTree m (SVG.PolygonTree l) 
+                = [ColoredPath color (map (transform tr) (MoveTo p0:map LineTo (ps ++ [p0])))]
             where
+                color = extractColor (SVG._polygonDrawAttributes l)
                 (p0:ps) = map (\(Linear.V2 x y) -> (x,y)) (SVG._polygonPoints l)
                 tr = applyTransformations m (SVG._transform (SVG._polygonDrawAttributes l))
 
-        renderTree m (SVG.EllipseTree e) = map (transform tr) (MoveTo (cx-rx,cy) : bs1++bs2++bs3++bs4)
+        renderTree m (SVG.EllipseTree e) 
+                = [ColoredPath color (map (transform tr) (MoveTo (cx-rx,cy) : bs1++bs2++bs3++bs4))]
             where
                 bs1 = convertSvgArc (cx-rx, cy) rx ry 0 False True (cx, cy-ry)
                 bs2 = convertSvgArc (cx, cy-ry) rx ry 0 False True (cx+rx, cy)
                 bs3 = convertSvgArc (cx+rx, cy) rx ry 0 False True (cx, cy+ry)
                 bs4 = convertSvgArc (cx, cy+ry) rx ry 0 False True (cx-rx, cy)
 
+                color = extractColor (SVG._ellipseDrawAttributes e)
                 (cx,cy) = fromSvgPoint dpi (SVG._ellipseCenter e)
                 rx = fromSvgNumber dpi (SVG._ellipseXRadius e)
                 ry = fromSvgNumber dpi (SVG._ellipseYRadius e)
                 tr = applyTransformations m (SVG._transform (SVG._ellipseDrawAttributes e))
 
-        renderTree m (SVG.CircleTree c) = map (transform tr) (MoveTo (cx-r,cy) : bs1++bs2++bs3++bs4)
+        renderTree m (SVG.CircleTree c)
+                = [ColoredPath color (map (transform tr) (MoveTo (cx-r,cy) : bs1++bs2++bs3++bs4))]
             where
                 bs1 = convertSvgArc (cx-r, cy) r r 0 False True (cx, cy-r)
                 bs2 = convertSvgArc (cx, cy-r) r r 0 False True (cx+r, cy)
                 bs3 = convertSvgArc (cx+r, cy) r r 0 False True (cx, cy+r)
                 bs4 = convertSvgArc (cx, cy+r) r r 0 False True (cx-r, cy)
 
+                color = extractColor (SVG._circleDrawAttributes c)
                 (cx,cy) = fromSvgPoint dpi (SVG._circleCenter c)
                 r = fromSvgNumber dpi (SVG._circleRadius c)
                 tr = applyTransformations m (SVG._transform (SVG._circleDrawAttributes c))
@@ -282,5 +306,5 @@ renderDoc approximation dpi resolution doc
         {- The rest: None, UseTree, SymbolTree, TextTree, ImageTree -}
         renderTree _ _ = []
 
-        renderTrees :: TransformationMatrix -> [SVG.Tree] -> [PathCommand]
+        renderTrees :: TransformationMatrix -> [SVG.Tree] -> [ColoredPath]
         renderTrees m es = concatMap (renderTree m) es

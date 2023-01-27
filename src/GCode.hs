@@ -18,8 +18,8 @@ data GCodeFlavor = GCodeFlavor { _begin   :: String
 defaultFlavor :: GCodeFlavor
 defaultFlavor =  GCodeFlavor "G17\nG90\nG0 Z1\nG0 X0 Y0" "G0 Z1" "G01 Z0 F10.00" "G00 Z1"
 
-toString :: GCodeFlavor -> Int -> [PathCommand] -> String
-toString (GCodeFlavor begin end on off) dpi gops 
+toString :: GCodeFlavor -> Int -> [ColoredPath] -> String
+toString (GCodeFlavor begin end on off) dpi cps 
     = begin ++
       "\n" ++ 
       intercalate "\n" (toString' gops (0,0) True) ++ 
@@ -27,6 +27,8 @@ toString (GCodeFlavor begin end on off) dpi gops
       end ++
       "\n"
     where
+        gops = concatMap (\(ColoredPath _ path) -> path) cps
+
         dd :: Double
         dd = fromIntegral dpi
 
