@@ -1,37 +1,48 @@
+{-# LANGUAGE DeriveGeneric #-}
+
 module GCode ( GCodeFlavor(..)
-             , defaultFlavor
              , toString
              ) where
 
-import qualified Data.HashMap.Strict as HashMap 
+import GHC.Generics
+
 import Data.HashMap.Strict (HashMap)
 import Data.List
+import Data.Aeson (FromJSON (..))
 import Text.Printf
 
 import Graphics.Path
 import Utils
 
 import Codec.Picture (PixelRGBA8(..))
+import Data.Maybe (fromMaybe)
 
-data GCodeFlavor = GCodeFlavor { _begin   :: String
-                               , _end     :: String
-                               , _toolon  :: String
-                               , _tooloff :: String
-                               , _colors  :: HashMap String String
-                               }
+data GCodeFlavor = GCodeFlavor { begin   :: Maybe [String]
+                               , end     :: Maybe [String]
+                               , toolon  :: Maybe [String]
+                               , tooloff :: Maybe [String]
+                               , colors  :: Maybe (HashMap String [String])
+                               } deriving (Show, Generic)
+
+instance FromJSON GCodeFlavor
 
 defaultFlavor :: GCodeFlavor
-defaultFlavor =  GCodeFlavor "G17\nG90\nG0 Z1\nG0 X0 Y0" "G0 Z1" "G01 Z0 F10.00" "G00 Z1" HashMap.empty
+defaultFlavor =  GCodeFlavor (Just ["G17","G90","G0 Z1","G0 X0 Y0"]) (Just ["G0 Z1"]) (Just ["G01 Z0 F10.00"]) (Just ["G00 Z1"]) Nothing
 
-toString :: GCodeFlavor -> Int -> [ColoredPath] -> String
-toString (GCodeFlavor begin end on off colors) dpi cps
-    = begin ++
+toString :: Maybe GCodeFlavor -> Int -> [ColoredPath] -> String
+toString mbConfig dpi cps
+    = intercalate "\n" (concat (begin config)) ++
       "\n" ++
       intercalate "\n" (toString' (flatten cps) (0,0) True) ++
       "\n" ++
-      end ++
+      intercalate "\n" (concat (end config)) ++
       "\n"
     where
+        config = fromMaybe defaultFlavor mbConfig
+
+        toolonCommands = concat (toolon config)
+        tooloffCommands = concat (tooloff config)
+
         toColorString Nothing = "000000"
         toColorString (Just (PixelRGBA8 r g b _)) = concatMap (printf "%02X") [r, g, b]
 
@@ -43,12 +54,13 @@ toString (GCodeFlavor begin end on off colors) dpi cps
         mm :: Double -> Double
         mm px = (px * 2.54 * 10) / dd
 
+        toString' :: [Either String PathCommand] -> (Double, Double) -> Bool -> [String]
         toString' (Right (MoveTo p@(x,y)) : gs) _ False
             = printf "G00 X%.4f Y%.4f" (mm x) (mm y) : toString' gs p False
         toString' (Right (MoveTo p@(x,y)) : gs) _ True
-            = off : printf "G00 X%.4f Y%.4f" (mm x) (mm y) : toString' gs p False
+            = tooloffCommands ++ [printf "G00 X%.4f Y%.4f" (mm x) (mm y)] ++ toString' gs p False
         toString' gs cp False
-            = on : toString' gs cp True
+            = toolonCommands ++ toString' gs cp True
         toString' (Right (LineTo p@(x,y)) : gs) _ True
             = printf "G01 X%.4f Y%.4f" (mm x) (mm y) : toString' gs p True
         toString' (Right (ArcTo (ox,oy) p@(x,y) cw) : gs) (cx,cy) True
