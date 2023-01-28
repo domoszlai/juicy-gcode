@@ -3,6 +3,9 @@ module Render (
     renderDoc
 ) where
 
+
+import Codec.Picture (PixelRGBA8(..))
+
 import Data.Maybe ( fromMaybe )
 import Data.Monoid
 
@@ -221,9 +224,9 @@ renderDoc approximation dpi resolution doc
 
         renderPathCommands _ _ _ _ = []
 
-        extractColor :: DrawAttributes -> Maybe String
+        extractColor :: DrawAttributes -> Maybe PixelRGBA8
         extractColor attr = case getLast $ SVG._strokeColor attr of
-                                (Just (SVG.ColorRef rgba8)) -> Just (show rgba8)
+                                (Just (SVG.ColorRef rgba8)) -> Just rgba8
                                 _ -> Nothing
 
         renderTree :: TransformationMatrix -> SVG.Tree -> [ColoredPath]

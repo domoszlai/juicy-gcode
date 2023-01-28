@@ -46,7 +46,8 @@ executable juicy-gcode
     text                    >=1.2.2  && <1.3,
     matrix                  >=0.3.5  && <0.4,
     svg-tree                >=0.6    && <0.7,
-    gitrev                  >=1.3.0  && <1.4
+    gitrev                  >=1.3.0  && <1.4,
+    JuicyPixels             >=3.2    && <3.3
 
   GHC-Options:              -Wall
   default-language:         Haskell2010

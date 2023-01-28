@@ -4,8 +4,9 @@ module Graphics.Path (
 ) where
 
 import Graphics.Point
+import Codec.Picture (PixelRGBA8 (..))
 
-data ColoredPath = ColoredPath (Maybe String) [PathCommand]
+data ColoredPath = ColoredPath (Maybe PixelRGBA8) [PathCommand]
 
 -- all of them are invariant under affine transformation
 data PathCommand 
