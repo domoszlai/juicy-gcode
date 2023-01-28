@@ -7,6 +7,7 @@ module GCode ( GCodeFlavor(..)
 import GHC.Generics
 
 import Data.HashMap.Strict (HashMap)
+import qualified Data.HashMap.Strict as HashMap
 import Data.List
 import Data.Aeson (FromJSON (..))
 import Text.Printf
@@ -39,6 +40,9 @@ toString mbConfig dpi cps
       "\n"
     where
         config = fromMaybe defaultFlavor mbConfig
+        colorMap :: HashMap String [String]
+        colorMap = fromMaybe HashMap.empty (colors config)
+        colorCommands color = concat $ HashMap.lookup color colorMap
 
         toolonCommands = concat (toolon config)
         tooloffCommands = concat (tooloff config)
@@ -84,6 +88,6 @@ toString mbConfig dpi cps
                         (mm i) (mm j) (mm p) (mm q) (mm p2x) (mm p2y)
 
         toString' (Left color : gs) p drawing
-            = printf ("-- " ++ color): toString' gs p drawing
+            = colorCommands color ++ toString' gs p drawing
 
         toString' [] _ _ = []
