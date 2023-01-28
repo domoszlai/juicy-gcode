@@ -3,6 +3,8 @@ module GCode ( GCodeFlavor(..)
              , toString
              ) where
 
+import qualified Data.HashMap.Strict as HashMap 
+import Data.HashMap.Strict (HashMap)
 import Data.List
 import Text.Printf
 
@@ -15,13 +17,14 @@ data GCodeFlavor = GCodeFlavor { _begin   :: String
                                , _end     :: String
                                , _toolon  :: String
                                , _tooloff :: String
+                               , _colors  :: HashMap String String
                                }
 
 defaultFlavor :: GCodeFlavor
-defaultFlavor =  GCodeFlavor "G17\nG90\nG0 Z1\nG0 X0 Y0" "G0 Z1" "G01 Z0 F10.00" "G00 Z1"
+defaultFlavor =  GCodeFlavor "G17\nG90\nG0 Z1\nG0 X0 Y0" "G0 Z1" "G01 Z0 F10.00" "G00 Z1" HashMap.empty
 
 toString :: GCodeFlavor -> Int -> [ColoredPath] -> String
-toString (GCodeFlavor begin end on off) dpi cps
+toString (GCodeFlavor begin end on off colors) dpi cps
     = begin ++
       "\n" ++
       intercalate "\n" (toString' (flatten cps) (0,0) True) ++

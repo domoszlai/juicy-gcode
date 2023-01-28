@@ -1,6 +1,7 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
 {-# HLINT ignore "Use lambda-case" #-}
+{-# HLINT ignore "Use tuple-section" #-}
 
 import qualified Graphics.Svg as SVG
 
@@ -9,12 +10,16 @@ import Paths_juicy_gcode (version)
 import Data.Version (showVersion)
 import Development.GitRev (gitHash)
 
-import Data.Text (Text, pack, unpack, replace)
 import qualified Data.Configurator as C
+import qualified Data.Configurator.Types as CT
+import Data.HashMap.Strict (fromList, toList)
+import Data.Maybe (fromMaybe, mapMaybe)
+import Data.Text (Text, pack, unpack, replace)
+import Data.List (stripPrefix)
 
 import Render
 import GCode
-import Data.Maybe (fromMaybe)
+
 
 data Options = Options { _svgfile        :: String
                        , _cfgfile        :: Maybe String
@@ -85,7 +90,18 @@ readFlavor cfgFile = do
   end          <- C.require cfg (pack "gcode.end")
   toolon       <- C.require cfg (pack "gcode.toolon")
   tooloff      <- C.require cfg (pack "gcode.tooloff")
-  return $ GCodeFlavor (toLines begin) (toLines end) (toLines toolon) (toLines tooloff)
+  colors       <- C.getMap cfg
+  return $ GCodeFlavor
+            (toLines begin)
+            (toLines end)
+            (toLines toolon)
+            (toLines tooloff)
+            ((fromList . mapMaybe convertEntry . toList) colors)
+  where
+    convertEntry :: (CT.Name, CT.Value) -> Maybe (String, String)
+    convertEntry (key, val) = case CT.convert val of
+                                  Nothing -> Nothing
+                                  Just a  -> (\k -> (k, unpack a)) <$> stripPrefix "colors." (unpack key)
 
 versionOption :: Parser (a -> a)
 versionOption = infoOption
