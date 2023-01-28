@@ -34,7 +34,7 @@ toString :: Maybe GCodeFlavor -> Int -> [ColoredPath] -> String
 toString mbConfig dpi cps
     = intercalate "\n" (concat (begin config)) ++
       "\n" ++
-      intercalate "\n" (toString' (flatten cps) (0,0) True) ++
+      intercalate "\n" (toString' (flatten cps) (0,0) True Nothing) ++
       "\n" ++
       intercalate "\n" (concat (end config)) ++
       "\n"
@@ -58,17 +58,17 @@ toString mbConfig dpi cps
         mm :: Double -> Double
         mm px = (px * 2.54 * 10) / dd
 
-        toString' :: [Either String PathCommand] -> (Double, Double) -> Bool -> [String]
-        toString' (Right (MoveTo p@(x,y)) : gs) _ False
-            = printf "G00 X%.4f Y%.4f" (mm x) (mm y) : toString' gs p False
-        toString' (Right (MoveTo p@(x,y)) : gs) _ True
-            = tooloffCommands ++ [printf "G00 X%.4f Y%.4f" (mm x) (mm y)] ++ toString' gs p False
-        toString' gs cp False
-            = toolonCommands ++ toString' gs cp True
-        toString' (Right (LineTo p@(x,y)) : gs) _ True
-            = printf "G01 X%.4f Y%.4f" (mm x) (mm y) : toString' gs p True
-        toString' (Right (ArcTo (ox,oy) p@(x,y) cw) : gs) (cx,cy) True
-            = arcStr : toString' gs p True
+        toString' :: [Either String PathCommand] -> (Double, Double) -> Bool -> Maybe String -> [String]
+        toString' (Right (MoveTo p@(x,y)) : gs) _ False mbCurrentColor
+            = printf "G00 X%.4f Y%.4f" (mm x) (mm y) : toString' gs p False mbCurrentColor
+        toString' (Right (MoveTo p@(x,y)) : gs) _ True mbCurrentColor
+            = tooloffCommands ++ [printf "G00 X%.4f Y%.4f" (mm x) (mm y)] ++ toString' gs p False mbCurrentColor
+        toString' gs cp False mbCurrentColor
+            = toolonCommands ++ toString' gs cp True mbCurrentColor
+        toString' (Right (LineTo p@(x,y)) : gs) _ True mbCurrentColor
+            = printf "G01 X%.4f Y%.4f" (mm x) (mm y) : toString' gs p True mbCurrentColor
+        toString' (Right (ArcTo (ox,oy) p@(x,y) cw) : gs) (cx,cy) True mbCurrentColor
+            = arcStr : toString' gs p True mbCurrentColor
             where
                 i = ox - cx
                 j = oy - cy
@@ -76,8 +76,8 @@ toString mbConfig dpi cps
                 cmd = if' cw "G03" "G02"
 
                 arcStr = printf "%s X%.4f Y%.4f I%.4f J%.4f" cmd (mm x) (mm y) (mm i) (mm j)
-        toString' (Right (BezierTo (c1x,c1y) (c2x,c2y) p2@(p2x,p2y)) : gs) (p1x,p1y) True
-            = bStr : toString' gs p2 True
+        toString' (Right (BezierTo (c1x,c1y) (c2x,c2y) p2@(p2x,p2y)) : gs) (p1x,p1y) True mbCurrentColor
+            = bStr : toString' gs p2 True mbCurrentColor
             where
                 i = c1x - p1x
                 j = c1y - p1y
@@ -87,7 +87,10 @@ toString mbConfig dpi cps
                 bStr = printf "G05 I%.4f J%.4f P%.4f Q%.4f X%.4f Y%.4f"
                         (mm i) (mm j) (mm p) (mm q) (mm p2x) (mm p2y)
 
-        toString' (Left color : gs) p drawing
-            = colorCommands color ++ toString' gs p drawing
+        toString' (Left color : gs) p drawing mbCurrentColor
+            | mbCurrentColor == Just color
+                =  toString' gs p drawing (Just color)
+            | otherwise
+                = colorCommands color ++ toString' gs p drawing (Just color)
 
-        toString' [] _ _ = []
+        toString' [] _ _ _ = []
