@@ -1,16 +1,33 @@
-begin:
-  - "G21"
-  - "G00 Z1"
-  - "G00 X0.0 Y0.0"
-end:
-  - "G00 Z1"
-  - "G00 X0.0 Y0.0"
-toolon:
-  - "G01 Z0"
-tooloff:
-  - "G00 Z1"
+begin: |
+  G17
+  G90
+  G0 Z1
+  G0 X0 Y0
+end: |
+  G0 Z1
+toolon: |
+  G01 Z0 F10.00
+tooloff: |
+  G00 Z1
 colors:
-  "000000":
-    - "F1.0 S80"
-  "FF0000":
-    - "F2.0 S25"
+   "000000": 
+      before: |
+        ; black
+      passes: 1
+      parameters:
+        F: 1.0 
+        S: 80
+   "FF0000": 
+      before: |
+        ; red
+      passes: 1
+      parameters:
+        F: 2.0 
+        S: 25
+   "FFFF00": 
+      before: |
+        ; yellow
+      passes: 1
+      parameters:
+        F: 2.0 
+        S: 25
