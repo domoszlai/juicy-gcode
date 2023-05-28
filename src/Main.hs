@@ -1,6 +1,7 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
 {-# HLINT ignore "Use lambda-case" #-}
+{-# HLINT ignore "Use tuple-section" #-}
 
 import qualified Graphics.Svg as SVG
 
@@ -9,12 +10,11 @@ import Paths_juicy_gcode (version)
 import Data.Version (showVersion)
 import Development.GitRev (gitHash)
 
-import Data.Text (Text, pack, unpack, replace)
-import qualified Data.Configurator as C
+import Data.Maybe (fromMaybe)
+import qualified Data.Yaml as Y
 
 import Render
 import GCode
-import Data.Maybe (fromMaybe)
 
 data Options = Options { _svgfile        :: String
                        , _cfgfile        :: Maybe String
@@ -68,24 +68,12 @@ runWithOptions :: Options -> IO ()
 runWithOptions (Options svgFile mbCfg mbOut dpi resolution mbApproximation) =
     do
         mbDoc <- SVG.loadSvgFile svgFile
-        flavor <- maybe (return defaultFlavor) readFlavor mbCfg
+        mbConfig <- maybe (return Nothing) (fmap Just . Y.decodeFileThrow) mbCfg
         case mbDoc of
-            (Just doc) -> writer (toString flavor dpi $ renderDoc (fromMaybe BiArc mbApproximation) dpi resolution doc)
+            (Just doc) -> writer (toString mbConfig dpi $ renderDoc (fromMaybe BiArc mbApproximation) dpi resolution doc)
             Nothing    -> putStrLn "juicy-gcode: error during opening the SVG file"
     where
         writer = maybe putStr writeFile mbOut
-
-toLines :: Text -> String
-toLines t = unpack $ replace (pack ";") (pack "\n") t
-
-readFlavor :: FilePath -> IO GCodeFlavor
-readFlavor cfgFile = do
-  cfg          <- C.load [C.Required cfgFile]
-  begin        <- C.require cfg (pack "gcode.begin")
-  end          <- C.require cfg (pack "gcode.end")
-  toolon       <- C.require cfg (pack "gcode.toolon")
-  tooloff      <- C.require cfg (pack "gcode.tooloff")
-  return $ GCodeFlavor (toLines begin) (toLines end) (toLines toolon) (toLines tooloff)
 
 versionOption :: Parser (a -> a)
 versionOption = infoOption
