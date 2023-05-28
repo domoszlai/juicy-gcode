@@ -10,14 +10,17 @@ Juicy-GCode is a command-line application that converts SVG files to GCode. It p
 ## Features 
 
 - **Configurable Curve Approximation**: Juicy-GCode offers three approximation methods to suit your needs
-   - with [biarcs](http://dlacko.org/blog/2016/10/19/approximating-bezier-curves-by-biarcs/) for maximal curve fitting: bezier curves are approximated with arcs ([G2, G3 commands](https://marlinfw.org/meta/gcode/)), the resulting path is [G1 continues](https://skill-lync.com/blogs/introductions-to-surface-continuities-and-its-types)
-   - with linear approximation when arcs are not supported by your firmware: bezier curves are approximated with line segments ([G0, G1 commands](https://marlinfw.org/meta/gcode/)), the resulting path is [not smooth](https://skill-lync.com/blogs/introductions-to-surface-continuities-and-its-types), and the generated gcode is usually significantly larger 
-   - with cubic bezier curves if your firmware supports it: some firmwares (e.g. [Marlin](https://marlinfw.org/docs/gcode/G005.html)) can handle bezier curves directly ([G5 command](https://marlinfw.org/meta/gcode/)), the result is [G2 continues](https://skill-lync.com/blogs/introductions-to-surface-continuities-and-its-types)
-- **Configurable 2.5D GCode generation**: Juicy-GCode allows you to configure the GCode generation by color information. This feature enables e.g. carving of 3D objects based on a single SVG file.
+   - with [biarcs](http://dlacko.org/blog/2016/10/19/approximating-bezier-curves-by-biarcs/) for maximal curve fitting: bezier curves are approximated with arcs ([G2, G3 commands](https://marlinfw.org/meta/gcode/)), the resulting path is [G1 continuous](https://skill-lync.com/blogs/introductions-to-surface-continuities-and-its-types)
+   - with linear approximation when arcs are not supported by your firmware: bezier curves are approximated with line segments ([G0, G1 commands](https://marlinfw.org/meta/gcode/)), the resulting path is [not smooth](https://skill-lync.com/blogs/introductions-to-surface-continuities-and-its-types), and the generated GCode is usually significantly larger 
+   - with cubic bezier curves if your firmware supports it: some firmwares (e.g. [Marlin](https://marlinfw.org/docs/gcode/G005.html)) can handle bezier curves directly ([G5 command](https://marlinfw.org/meta/gcode/)), the result is [G2 continuous](https://skill-lync.com/blogs/introductions-to-surface-continuities-and-its-types)
+- **Configurable 2.5D GCode generation**: Juicy-GCode allows you to configure the GCode generation by color information (this feature enables e.g. carving of 3D objects based on a single SVG file)
+   - extra GCode can be added to the beginning of a continous colored path
+   - GCode [parameters](https://reprap.org/wiki/G-code#G0_.26_G1:_Move) e.g. `E`, `F` or `S` can be set per color
+   - the number of passes can be set for a given color (upcoming feature)
 
 ## Installation
 
-The easiest way is to download one of the pre-built binaries from the [releases page](https://github.com/domoszlai/juicy-gcode/releases).
+The easiest way is to download one of the prebuilt binaries from the [releases page](https://github.com/domoszlai/juicy-gcode/releases).
 Alternatively, you can build from source code as follows:
 
 - Install [Stack](https://docs.haskellstack.org/en/stable/install_and_upgrade/) if you do not have it yet
@@ -49,7 +52,7 @@ $ juicy-gcode SVGFILE -o OUTPUT
 Sometimes you want to overwrite some default settings. These are the 
 
 * *--dpi* (default 96 DPI) [the resolution of the SVG file](https://developer.mozilla.org/en-US/docs/Web/CSS/resolution) that is used to determine the size of the SVG when it does not contain explicit units
-* *--tolerance* (default is 0.1 mm) maximum allowed derivation of the approximation curve
+* *--tolerance* (default is 0.1 mm) maximum allowed deviation of the approximation curve
  
 ```
 $ juicy-gcode SVGFILE --dpi 72 --tolerance 0.01 
@@ -69,12 +72,12 @@ $ juicy-gcode SVGFILE --curve-fitting=cubic-bezier
 
 ## Configuration
 
-The generated GCode is highly dependent on the actual device it will be executed by and it may also contain color dependent configuration. In juicy-gcode these settings are called GCode *flavor* and consists of the following:
+The generated GCode is highly dependent on the actual device it will be executed by and one might also want to generate different GCode for different colors. In juicy-gcode these settings are called GCode *flavor* and consist of the following:
 
 - Begin GCode routine (commands that are executed *before* the actual print job)
 - End GCode routine (commands that are executed *after* the actual print job)
-- Tool on (commands to switch the tool on, e.g. lower pen)
-- Tool off (commands to switch the tool off e.g. lift pen)
+- Tool on (commands to switch the tool on, e.g. lower the pen)
+- Tool off (commands to switch the tool off e.g. lift the pen)
 - Color dependent settings
 
 These settings can be provided by a YAML configuration file. The default settings
@@ -116,27 +119,14 @@ colors:
         S: 25
 ```
 
+In this example, GCode comments will be generated before any continous red or black path, the `F` and `S` GCode parameters are
+set different for red and black paths (and not set for any other colors) and the number of passes are set to 1 for both colors (passes is an upcoming feature, currently this option is ignored)
 
+Use the `-f` option to pass the GCode flavor to `juicy-gcode`:
 
 ```
 $ juicy-gcode SVGFILE -f FLAVORFILE
 ```
-
-## Future development
-
-Juicy-gcode was originally developed as a testbed for my hanging plotter project, but over the years
-it reached maturity and became a really usuable tool. My main idea for further development is to turn it
-into a tool that can drive CNCs in 2.5 dimensions (e.g. carving, engraving) with just one colored SVG file.
-
-To be able to test and enjoy that software, I need a proper CNC. Please consider donating a small amount for that purpose,
-or donate an actual CNC if you have a spare one for whatever reason.
-
-**[Donate for a CNC](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=UGFZYDQSTF58L&source=https://github.com/domoszlai/juicy-gcode/)**
-
-Collected so far: 229.47&euro;
-Target: >= 209&euro;
-
-Thank you so much for all people supporting the development!
 
 ## Limitations
 
