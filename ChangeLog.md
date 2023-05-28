@@ -1,5 +1,10 @@
 # Revision history for juicy-gcode
 
+## 1.0.0.0 -- 2023-05-28
+
+- Breaking change: change favor file format to YAML
+- Enable color specific configuration
+
 ## 0.3.0.0 -- 2022-12-14
 
 - Add linear approximation algorithm
