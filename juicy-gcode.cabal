@@ -11,7 +11,7 @@ homepage:            https://github.com/domoszlai/juicy-gcode
 bug-reports:         https://github.com/domoszlai/juicy-gcode/issues
 build-type:          Simple
 description:
-  SVG to G-code converter that aims to support most SVG features. The flavor of the generated G-Code can be influenced providing a configuration file.
+  SVG to G-code converter that aims to support most SVG features. It provides flexible options for curve approximation and allows configurable GCode generation based on color information.
 
 extra-source-files:  ChangeLog.md, README.md
 cabal-version:       >=1.10
