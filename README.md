@@ -1,14 +1,19 @@
-# Juicy-gcode: A lightweight SVG to GCode converter for maximal curve fitting
+# Juicy-gcode: A lightweight 2.5D SVG to GCode converter for maximal curve fitting
 
 [![Hackage](https://img.shields.io/hackage/v/juicy-gcode.svg)](https://hackage.haskell.org/package/juicy-gcode)
 [![Appveyor](https://ci.appveyor.com/api/projects/status/github/domoszlai/juicy-gcode?branch=master&svg=true)](https://ci.appveyor.com/project/domoszlai/juicy-gcode)
 
 ## Overview
 
-Juicy-gcode is a configurable SVG to G-code converter that approximates bezier curves based on your needs:
-- with [biarcs](http://dlacko.org/blog/2016/10/19/approximating-bezier-curves-by-biarcs/) for maximal curve fitting: bezier curves are approximated with arcs ([G2, G3 commands](https://marlinfw.org/meta/gcode/)), the resulting path is [G1 continues](https://skill-lync.com/blogs/introductions-to-surface-continuities-and-its-types)
-- with linear approximation when arcs are not supported by your firmware: bezier curves are approximated with line segments ([G0, G1 commands](https://marlinfw.org/meta/gcode/)), the resulting path is [not smooth](https://skill-lync.com/blogs/introductions-to-surface-continuities-and-its-types), and the generated gcode is usually significantly larger 
-- with cubic bezier curves if your firmware supports it: some firmwares (e.g. [Marlin](https://marlinfw.org/docs/gcode/G005.html)) can handle bezier curves directly ([G5 command](https://marlinfw.org/meta/gcode/)), the result is [G2 continues](https://skill-lync.com/blogs/introductions-to-surface-continuities-and-its-types)
+Juicy-GCode is a command-line application that converts SVG files to GCode. It provides flexible options for curve approximation and allows configurable GCode generation based on color information.
+
+## Features 
+
+- **Configurable Curve Approximation**: Juicy-GCode offers three approximation methods to suit your needs
+   - with [biarcs](http://dlacko.org/blog/2016/10/19/approximating-bezier-curves-by-biarcs/) for maximal curve fitting: bezier curves are approximated with arcs ([G2, G3 commands](https://marlinfw.org/meta/gcode/)), the resulting path is [G1 continues](https://skill-lync.com/blogs/introductions-to-surface-continuities-and-its-types)
+   - with linear approximation when arcs are not supported by your firmware: bezier curves are approximated with line segments ([G0, G1 commands](https://marlinfw.org/meta/gcode/)), the resulting path is [not smooth](https://skill-lync.com/blogs/introductions-to-surface-continuities-and-its-types), and the generated gcode is usually significantly larger 
+   - with cubic bezier curves if your firmware supports it: some firmwares (e.g. [Marlin](https://marlinfw.org/docs/gcode/G005.html)) can handle bezier curves directly ([G5 command](https://marlinfw.org/meta/gcode/)), the result is [G2 continues](https://skill-lync.com/blogs/introductions-to-surface-continuities-and-its-types)
+- **Configurable 2.5D GCode generation**: Juicy-GCode allows you to configure the GCode generation by color information. This feature enables e.g. carving of 3D objects based on a single SVG file.
 
 ## Installation
 
@@ -22,6 +27,8 @@ Alternatively, you can build from source code as follows:
 - `$ juicy-gcode --help`
 
 ## Usage
+
+> :warning: **Breaking change**: Since version 1.0.0.0, the flavor file format changed to YAML. If you use a pre 1.0 version, please refer to [this historical README file](https://github.com/domoszlai/juicy-gcode/blob/9d573918eb1c4a99801c8d6745f7471ba987828c/README.md)
 
 > :warning: **Breaking change**: Since version 0.3.0.0, `--generate-bezier` has been removed in favor of the more generic `--curve-fitting` parameter and `--resolution` has been renamed to `--tolerance`
 
@@ -62,29 +69,54 @@ $ juicy-gcode SVGFILE --curve-fitting=cubic-bezier
 
 ## Configuration
 
-The generated GCode is highly dependent on the actual device it will be executed by. In juicy-gcode these settings are called
-GCode *flavor* and consists of the following:
+The generated GCode is highly dependent on the actual device it will be executed by and it may also contain color dependent configuration. In juicy-gcode these settings are called GCode *flavor* and consists of the following:
 
 - Begin GCode routine (commands that are executed *before* the actual print job)
 - End GCode routine (commands that are executed *after* the actual print job)
 - Tool on (commands to switch the tool on, e.g. lower pen)
 - Tool off (commands to switch the tool off e.g. lift pen)
+- Color dependent settings
 
-These settings can be provided by a configuration file. The default settings
+These settings can be provided by a YAML configuration file. The default settings
 are made for being able to test the generated GCode in an emulator e.g. with [LaserWeb](https://laserweb.yurl.ch/)
 or [my hanging plotter simulator](https://github.com/domoszlai/hanging-plotter-simulator). 
 
-```
-gcode
-{
-   begin = "G17;G90;G0 Z1;G0 X0 Y0"
-   end = "G0 Z1"
-   toolon =  "G00 Z1"
-   tooloff = "G01 Z0 F10.00"
-}
+```YAML
+begin: |
+  G17
+  G90
+  G0 Z1
+  G0 X0 Y0
+end: |
+  G0 Z1
+toolon: |
+  G01 Z0 F10.00
+tooloff: |
+  G00 Z1
 ```
 
-In the case you want to overwrite it, copy this favor to a text file and modify it according to your need. Then use juicy-gcode as follows:
+By providing your own configuration file, you can also specify color dependent settings. As an example, the following
+configuration adds extra GCode configuration for the color codes `#000000` and `#FF0000`.
+
+```YAML
+colors:
+   "000000": 
+      before: |
+        ; black
+      passes: 1
+      parameters:
+        F: 1.0 
+        S: 80
+   "FF0000": 
+      before: |
+        ; red
+      passes: 1
+      parameters:
+        F: 2.0 
+        S: 25
+```
+
+
 
 ```
 $ juicy-gcode SVGFILE -f FLAVORFILE
