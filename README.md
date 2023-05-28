@@ -72,7 +72,7 @@ $ juicy-gcode SVGFILE --curve-fitting=cubic-bezier
 
 ## Configuration
 
-The generated GCode is highly dependent on the actual device it will be executed by and one might also want to generate different GCode for different colors. In juicy-gcode these settings are called GCode *flavor* and consist of the following:
+The generated GCode is highly dependent on the actual device it will be executed by and one might also want to generate different GCode for different colors. In `juicy-gcode` these settings are called GCode *flavor* and consist of the following:
 
 - Begin GCode routine (commands that are executed *before* the actual print job)
 - End GCode routine (commands that are executed *after* the actual print job)
